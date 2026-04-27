@@ -7,8 +7,8 @@ This system is designed to help IELTS aspirants prepare effectively by providing
 Built as a 5th Semester Project at **Kathmandu University, Department of Computer Science and Engineering.**
 
 ## Team Members
-- Muskan Shrestha
+- [Muskan Shrestha](https://github.com/muskan054)
 - Namrata Suwal
 - Nimika K.C
-- Swostika Shrestha
+- [Swostika Shrestha](https://github.com/Shly-7)
 - [Vipraja Dahal](https://github.com/viprajadahal)
