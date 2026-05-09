@@ -8,7 +8,7 @@ Built as a 5th Semester Project at **Kathmandu University, Department of Compute
 
 ## Team Members
 - [Muskan Shrestha](https://github.com/muskan054)
-- Namrata Suwal
-- Nimika K.C
+- [Namrata Suwal](https://github.com/BankaiNami)
+- Nimika K.C 
 - [Swostika Shrestha](https://github.com/Shly-7)
 - [Vipraja Dahal](https://github.com/viprajadahal)
