@@ -1,9 +1,17 @@
 from logging.config import fileConfig
 
+from app.database import Base
+from app.models import user, writing
+
+target_metadata = Base.metadata #this one 
+
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
+
+from app.models import user, writing 
+from app.models.writing import WritingAttempt
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
