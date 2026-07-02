@@ -18,12 +18,16 @@ const LoginForm = () => {
   const [formData, setFormData] = React.useState({ email: '', password: '' });
   const [remember, setRemember] = React.useState(false);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    login(formData.email, formData.password);
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  try {
+    await login(formData.email, formData.password);
     navigate('/dashboard');
-  };
-
+  } catch (err) {
+    console.error(err);
+    alert('Login failed. Check your email and password.');
+  }
+};
   return (
     <div className="min-h-screen flex">
       <div className="hidden lg:flex lg:w-1/2 bg-surface-light dark:bg-surface-dark relative overflow-hidden items-center justify-center">
