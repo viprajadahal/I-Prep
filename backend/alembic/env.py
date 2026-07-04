@@ -22,10 +22,12 @@ config.set_main_option(
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-from app.database import Base
-from app.models import user
-target_metadata = Base.metadata
+from app.models.user import User
+from app.models.speak import SpeakingAttempt, SpeakingQuestion, ListeningTest
+from sqlmodel import SQLModel
 
+# 2. Tell Alembic to look at the SQLModel metadata(point to sqlmodel)
+target_metadata = SQLModel.metadata
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
