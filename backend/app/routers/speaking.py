@@ -1,22 +1,66 @@
-import uuid #for unique naming
+import uuid
 import os
 import shutil
-from fastapi import APIRouter, UploadFile, File, HTTPException # Added HTTPException here
-from pydub import AudioSegment #for measuring time
+from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
+from sqlalchemy import func
+from sqlmodel import select
+from sqlmodel.ext.asyncio.session import AsyncSession 
+from pydub import AudioSegment
 import whisper
+
+# --- DATABASE IMPORTS ---
+from app.database import get_db
+from app.models.user import User
+from app.models.speak import SpeakingQuestion, SpeakingAttempt
 
 router = APIRouter(
     prefix="/speaking",
     tags=["speaking"]
 )
 
-# Load the AI model
+# Load AI model
 model = whisper.load_model("tiny")
 
+# --- 1. SMART GET: Automatically pick question based on User's Level ---
+@router.get("/get-next-test")
+async def get_next_test(db: AsyncSession = Depends(get_db)):
+    """
+    Way 3: Automatically detects the user's level from the database 
+    and returns a random question for that level.
+    """
+    # 1. Fetch User #1 (Hardcoded for now until Login is integrated)
+    user_result = await db.execute(select(User).where(User.id == 1))
+    user = user_result.scalar_one_or_none()
+    
+    if not user:
+        # Fallback if no user exists in DB yet
+        current_level = "Beginner"
+    else:
+        current_level = user.current_speaking_level
+
+    # 2. Fetch random question matching that level
+    statement = select(SpeakingQuestion).where(SpeakingQuestion.difficulty == current_level).order_by(func.random())
+    result = await db.execute(statement)
+    question = result.scalars().first()
+
+    if not question:
+        raise HTTPException(status_code=404, detail=f"No questions found for your level: {current_level}")
+    
+    return {
+        "user_current_level": current_level,
+        "question": question
+    }
+
+# --- 2. EVALUATE & ADAPT: Grade the voice and update User's Level ---
 @router.post("/evaluate")
-async def evaluate_speaking(file: UploadFile = File(...)):
-    # 1. GENERATE UNIQUE FILENAME (The Smart Move)
-    # This prevents users from overwriting each other's files
+async def evaluate_speaking(
+    question_id: int, 
+    file: UploadFile = File(...), 
+    db: AsyncSession = Depends(get_db)
+):
+    if not file.content_type.startswith("audio/"):
+        raise HTTPException(status_code=400, detail="Please upload an audio file.")
+
     unique_id = str(uuid.uuid4())
     filename = f"{unique_id}_{file.filename}"
     file_path = f"uploads/{filename}"
@@ -24,41 +68,64 @@ async def evaluate_speaking(file: UploadFile = File(...)):
     if not os.path.exists("uploads"):
         os.makedirs("uploads")
 
-    # 2. SAVE THE FILE
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
     try:
-        # 3. MEASURE DURATION (Signal Processing)
+        # A. Signal Processing & AI
         audio = AudioSegment.from_file(file_path)
-        duration_seconds = len(audio) / 1000.0  # pydub works in milliseconds
+        duration_sec = len(audio) / 1000.0
 
-        # 4. TRANSCRIBE (AI Part)
         result = model.transcribe(file_path)
-        text = result["text"]
+        text = result.get("text", "")
         
-        # 5. CALCULATE WPM (The Fluency Metric)
-        word_list = text.split()
-        word_count = len(word_list)
-        
-        # Formula: (Words / Seconds) * 60
-        wpm = (word_count / duration_seconds) * 60 if duration_seconds > 0 else 0
+        word_count = len(text.split())
+        wpm = (word_count / duration_sec) * 60 if duration_sec > 0 else 0
 
-        # 6. SIMPLE BAND SCORE LOGIC (Based on WPM)
-        # 120-150 is typical for a native speaker
-        if wpm > 130: band = 8.0
+        # B. IELTS scoring logic
+        if wpm > 130: band = 7.5
         elif wpm > 100: band = 6.5
-        elif wpm > 60: band = 5.0
-        else: band = 4.0
+        else: band = 5.5
+
+        # C. SAVE ATTEMPT TO DATABASE
+        new_attempt = SpeakingAttempt(
+            user_id=1, 
+            question_id=question_id,
+            audio_path=file_path,
+            transcript=text,
+            wpm=round(wpm, 2),
+            estimated_band=band
+        )
+        db.add(new_attempt)
+
+        # D. ADAPTIVE LOGIC: Update User Level (Way 3)
+        user_result = await db.execute(select(User).where(User.id == 1))
+        user = user_result.scalar_one_or_none()
+
+        if user:
+            old_level = user.current_speaking_level
+            # Decide new level
+            if band >= 7.5:
+                user.current_speaking_level = "Advanced"
+            elif band >= 6.0:
+                user.current_speaking_level = "Intermediate"
+            else:
+                user.current_speaking_level = "Beginner"
+            
+            db.add(user) # Stage the user update
+
+        # E. Final Commit
+        await db.commit()
+        await db.refresh(new_attempt)
 
         return {
-            "filename": filename,
-            "duration_sec": round(duration_seconds, 2),
-            "word_count": word_count,
-            "words_per_minute": round(wpm, 2),
-            "estimated_fluency_band": band,
-            "transcript": text
+            "attempt_id": new_attempt.id,
+            "transcript": text,
+            "wpm": round(wpm, 2),
+            "band_score": band,
+            "new_user_level": user.current_speaking_level if user else "Beginner"
         }
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Analysis Error: {str(e)}")
+        print(f"CRASH ERROR: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal Logic Error: {str(e)}")
