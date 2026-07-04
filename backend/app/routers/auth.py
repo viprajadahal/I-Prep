@@ -5,7 +5,7 @@ from fastapi.security import OAuth2PasswordBearer
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
-from app.schemas.user import UserCreate, UserResponse, Token
+from app.schemas.user import UserCreate, UserResponse, Token ,  LoginRequest
 from app.models.user import User
 from passlib.context import CryptContext
 from jose import jwt
@@ -41,13 +41,13 @@ async def register(user_data: UserCreate, db: AsyncSession = Depends(get_db)):
     return user
 
 @router.post("/login", response_model=Token)
-async def login(email: str, password: str, db: AsyncSession = Depends(get_db)):
+async def login(credentials: LoginRequest, db: AsyncSession = Depends(get_db)):
     # find user by email
-    result = await db.execute(select(User).where(User.email == email))
+    result = await db.execute(select(User).where(User.email == credentials.email))
     user = result.scalar_one_or_none()
     
     # if no user or wrong password, reject
-    if not user or not pwd_context.verify(password[:72], user.hashed_password):
+    if not user or not pwd_context.verify(credentials.password[:72], user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password"
