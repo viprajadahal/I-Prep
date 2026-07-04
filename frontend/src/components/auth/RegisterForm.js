@@ -28,11 +28,16 @@ const RegisterForm = () => {
     country: 'India',
   });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    register(formData);
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  try {
+    await register(formData);
     navigate('/dashboard');
-  };
+  } catch (err) {
+    console.error(err);
+    alert('Registration failed. Try a different email.');
+  }
+};
 
   const handleChange = (field, value) => {
     setFormData({ ...formData, [field]: value });
