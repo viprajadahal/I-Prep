@@ -1,4 +1,8 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from dotenv import load_dotenv 
+import os
+
+load_dotenv()
 
 class Settings(BaseSettings):
     DATABASE_URL: str
@@ -11,7 +15,7 @@ class Settings(BaseSettings):
      #   env_file = ".env"
 
 #settings = Settings() 
-#from here, for my newV2 way ti link my .env file
+#from here, for my newV2 way t0 link my .env file
 model_config = SettingsConfigDict(
         env_file=".env", 
         env_file_encoding="utf-8",
