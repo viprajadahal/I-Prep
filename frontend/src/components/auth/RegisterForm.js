@@ -9,11 +9,9 @@ import {
   EyeOff,
   ArrowRight,
   User,
-  Globe,
   Target,
   GraduationCap,
 } from 'lucide-react';
-import { countries } from '../../data/mockData';
 
 const RegisterForm = () => {
   const { register } = useAuth();
@@ -25,19 +23,18 @@ const RegisterForm = () => {
     password: '',
     confirmPassword: '',
     targetBand: '7.0',
-    country: 'India',
   });
 
- const handleSubmit = async (e) => {
-  e.preventDefault();
-  try {
-    await register(formData);
-    navigate('/dashboard');
-  } catch (err) {
-    console.error(err);
-    alert('Registration failed. Try a different email.');
-  }
-};
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await register(formData);
+      navigate('/dashboard');
+    } catch (err) {
+      console.error(err);
+      alert('Registration failed. Try a different email.');
+    }
+  };
 
   const handleChange = (field, value) => {
     setFormData({ ...formData, [field]: value });
@@ -156,41 +153,21 @@ const RegisterForm = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">
-                  Target IELTS Band
-                </label>
-                <div className="relative">
-                  <Target size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <select
-                    value={formData.targetBand}
-                    onChange={(e) => handleChange('targetBand', e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-white dark:bg-surface-cardDark border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all appearance-none"
-                  >
-                    {['5.0', '5.5', '6.0', '6.5', '7.0', '7.5', '8.0', '8.5', '9.0'].map((band) => (
-                      <option key={band} value={band}>{band}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">
-                  Country
-                </label>
-                <div className="relative">
-                  <Globe size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <select
-                    value={formData.country}
-                    onChange={(e) => handleChange('country', e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-white dark:bg-surface-cardDark border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all appearance-none"
-                  >
-                    {countries.map((c) => (
-                      <option key={c} value={c}>{c}</option>
-                    ))}
-                  </select>
-                </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+                Target IELTS Band
+              </label>
+              <div className="relative">
+                <Target size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <select
+                  value={formData.targetBand}
+                  onChange={(e) => handleChange('targetBand', e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 rounded-xl bg-white dark:bg-surface-cardDark border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all appearance-none"
+                >
+                  {['5.0', '5.5', '6.0', '6.5', '7.0', '7.5', '8.0', '8.5', '9.0'].map((band) => (
+                    <option key={band} value={band}>{band}</option>
+                  ))}
+                </select>
               </div>
             </div>
 
