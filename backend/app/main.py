@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import auth, reading
+from app.routers import auth, reading, analytics 
 
 app = FastAPI(title="IELTS Prep API", version="1.0")
 
@@ -14,6 +14,7 @@ app.add_middleware(
 
 app.include_router(auth.router)
 app.include_router(reading.router)
+app.include_router(analytics.router)
 
 @app.get("/")
 async def root():
