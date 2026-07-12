@@ -1,26 +1,20 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Home,
-  BookOpen,
-  ClipboardList,
-  BarChart3,
-  FolderOpen,
-  Sun,
-  Moon,
-  User,
-  Crown,
-  Menu,
-  X,
+  Home, BookOpen, ClipboardList, BarChart3, FolderOpen,
+  Sun, Moon, User, Menu, X, Settings, LogOut, ChevronDown,
 } from 'lucide-react';
 
 const Navbar = () => {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, logout } = useAuth();
   const { darkMode, toggleTheme } = useTheme();
+  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [profileOpen, setProfileOpen] = React.useState(false);
+  const dropdownRef = React.useRef(null);
 
   const navLinks = [
     { label: 'Home', icon: Home, path: '/' },
@@ -29,6 +23,23 @@ const Navbar = () => {
     { label: 'Dashboard', icon: BarChart3, path: '/dashboard' },
     { label: 'Resources', icon: FolderOpen, path: '/resources' },
   ];
+
+  // close dropdown when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setProfileOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleLogout = () => {
+    logout();
+    setProfileOpen(false);
+    navigate('/');
+  };
 
   return (
     <motion.nav
@@ -82,24 +93,71 @@ const Navbar = () => {
             </button>
 
             {isAuthenticated ? (
-              <div className="flex items-center gap-2">
-                {user?.isPremium && (
-                  <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-gradient-accent text-white text-xs font-medium">
-                    <Crown size={12} />
-                    Premium
-                  </span>
-                )}
-                <Link
-                  to="/dashboard"
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  onClick={() => setProfileOpen(!profileOpen)}
                   className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 >
                   <div className="w-7 h-7 rounded-full bg-gradient-accent flex items-center justify-center">
                     <User size={14} className="text-white" />
                   </div>
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-200 hidden sm:block">
-                    {user?.name?.split(' ')[0]}
+                    {user?.full_name?.split(' ')[0]}
                   </span>
-                </Link>
+                  <ChevronDown size={14} className={`text-gray-400 transition-transform ${profileOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                <AnimatePresence>
+                  {profileOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute right-0 mt-2 w-52 bg-white dark:bg-surface-cardDark rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden z-50"
+                    >
+                      {/* user info header */}
+                      <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
+                        <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                          {user?.full_name}
+                        </p>
+                        <p className="text-xs text-gray-400 truncate">{user?.email}</p>
+                        <p className="text-xs text-purple-500 mt-0.5">Target: Band {user?.target_band}</p>
+                      </div>
+
+                      {/* links */}
+                      <div className="py-1">
+                        <Link
+                          to="/dashboard"
+                          onClick={() => setProfileOpen(false)}
+                          className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                        >
+                          <BarChart3 size={15} className="text-gray-400" />
+                          Dashboard
+                        </Link>
+                        <Link
+                          to="/dashboard/settings"
+                          onClick={() => setProfileOpen(false)}
+                          className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                        >
+                          <Settings size={15} className="text-gray-400" />
+                          Settings
+                        </Link>
+                      </div>
+
+                      {/* logout */}
+                      <div className="border-t border-gray-100 dark:border-gray-700 py-1">
+                        <button
+                          onClick={handleLogout}
+                          className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                        >
+                          <LogOut size={15} />
+                          Sign Out
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             ) : (
               <Link
@@ -137,6 +195,15 @@ const Navbar = () => {
                   {link.label}
                 </Link>
               ))}
+              {isAuthenticated && (
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                >
+                  <LogOut size={16} />
+                  Sign Out
+                </button>
+              )}
             </div>
           </motion.div>
         )}

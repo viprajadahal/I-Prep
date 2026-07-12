@@ -8,8 +8,10 @@ import {
   BarChart3, Clock, Target, Flame,
   BookOpen, PenTool, Headphones, Mic, TrendingUp,
 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 const DashboardAnalytics = () => {
+  const { user } = useAuth();
   const [summary, setSummary] = useState(null);
   const [progress, setProgress] = useState([]);
   const [recentActivity, setRecentActivity] = useState([]);
@@ -42,7 +44,7 @@ const DashboardAnalytics = () => {
   };
 
   const statCards = summary ? [
-    { label: 'Overall Band', value: summary.overall_band, target: '7.5', icon: BarChart3, color: 'text-primary-600' },
+    { label: 'Overall Band', value: summary.overall_band, target: user?.target_band, icon: BarChart3, color: 'text-primary-600' },
     { label: 'Total Attempts', value: summary.total_attempts, icon: Flame, color: 'text-orange-500' },
     { label: 'Accuracy', value: `${summary.avg_accuracy}%`, icon: Target, color: 'text-green-500' },
     { label: 'Questions Done', value: summary.total_questions_answered, icon: Clock, color: 'text-purple-500' },
@@ -71,7 +73,6 @@ const DashboardAnalytics = () => {
         </p>
       </motion.div>
 
-      {/* stat cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {statCards.map((stat, index) => (
           <motion.div
@@ -89,14 +90,13 @@ const DashboardAnalytics = () => {
               {stat.value}
             </div>
             {stat.target && (
-              <div className="text-xs text-gray-400 mt-1">Target: {stat.target}</div>
+              <div className="text-xs text-gray-400 mt-1">Target: Band {stat.target}</div>
             )}
           </motion.div>
         ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {/* progress chart */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -141,7 +141,6 @@ const DashboardAnalytics = () => {
           )}
         </motion.div>
 
-        {/* recent activity */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
