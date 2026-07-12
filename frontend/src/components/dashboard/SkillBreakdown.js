@@ -1,26 +1,30 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar,
-  ResponsiveContainer,
+  RadarChart, PolarGrid, PolarAngleAxis,
+  PolarRadiusAxis, Radar, ResponsiveContainer,
 } from 'recharts';
 import { TrendingUp } from 'lucide-react';
-import { dashboardStats } from '../../data/mockData';
 
 const SkillBreakdown = () => {
-  const { progressHistory } = dashboardStats;
-  const latestWeek = progressHistory[progressHistory.length - 1];
+  const [radarData, setRadarData] = useState([]);
 
-  const radarData = [
-    { skill: 'Reading', score: latestWeek.reading, fullMark: 9 },
-    { skill: 'Listening', score: latestWeek.listening, fullMark: 9 },
-    { skill: 'Writing', score: latestWeek.writing, fullMark: 9 },
-    { skill: 'Speaking', score: latestWeek.speaking, fullMark: 9 },
-  ];
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    fetch("http://localhost:8000/analytics/skill-breakdown", {
+      headers: { "Authorization": `Bearer ${token}` }
+    })
+      .then(r => r.json())
+      .then(data => {
+        const formatted = data.map(item => ({
+          skill: item.skill_type.charAt(0).toUpperCase() + item.skill_type.slice(1),
+          score: parseFloat(item.accuracy),
+          fullMark: 100
+        }));
+        setRadarData(formatted);
+      })
+      .catch(err => console.error("Failed to load skill breakdown:", err));
+  }, []);
 
   return (
     <motion.div
@@ -35,21 +39,27 @@ const SkillBreakdown = () => {
         </h3>
         <TrendingUp size={18} className="text-gray-400" />
       </div>
-      <ResponsiveContainer width="100%" height={280}>
-        <RadarChart data={radarData}>
-          <PolarGrid stroke="#e5e7eb" />
-          <PolarAngleAxis dataKey="skill" tick={{ fontSize: 12, fill: '#9ca3af' }} />
-          <PolarRadiusAxis angle={90} domain={[0, 9]} tick={{ fontSize: 10, fill: '#9ca3af' }} />
-          <Radar
-            name="Current Score"
-            dataKey="score"
-            stroke="#4c6ef5"
-            fill="#4c6ef5"
-            fillOpacity={0.15}
-            strokeWidth={2}
-          />
-        </RadarChart>
-      </ResponsiveContainer>
+      {radarData.length > 0 ? (
+        <ResponsiveContainer width="100%" height={280}>
+          <RadarChart data={radarData}>
+            <PolarGrid stroke="#e5e7eb" />
+            <PolarAngleAxis dataKey="skill" tick={{ fontSize: 12, fill: '#9ca3af' }} />
+            <PolarRadiusAxis angle={90} domain={[0, 100]} tick={{ fontSize: 10, fill: '#9ca3af' }} />
+            <Radar
+              name="Accuracy %"
+              dataKey="score"
+              stroke="#4c6ef5"
+              fill="#4c6ef5"
+              fillOpacity={0.15}
+              strokeWidth={2}
+            />
+          </RadarChart>
+        </ResponsiveContainer>
+      ) : (
+        <div className="flex items-center justify-center h-48">
+          <p className="text-gray-400 text-sm">No data yet — complete some exercises first</p>
+        </div>
+      )}
     </motion.div>
   );
 };

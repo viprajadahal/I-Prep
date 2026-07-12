@@ -1,10 +1,9 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime, Boolean
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.sql import func
-from app.database import Base
 from sqlalchemy.orm import relationship
+from app.database import Base
 
-user = relationship("User", back_populates="reading_attempts")
 
 class ReadingPassage(Base):
     __tablename__ = "reading_passages"
@@ -15,6 +14,8 @@ class ReadingPassage(Base):
     difficulty = Column(String, nullable=True)  # "easy", "medium", "hard"
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
+    questions = relationship("ReadingQuestion", backref="passage")
+
 
 class ReadingQuestion(Base):
     __tablename__ = "reading_questions"
@@ -24,7 +25,8 @@ class ReadingQuestion(Base):
     question_type = Column(String, nullable=False)  # "mcq", "true_false_ng", "fill_blank", "matching"
     question_text = Column(Text, nullable=False)
     options = Column(JSONB, nullable=True)          # for MCQ/matching: choices
-    correct_answer = Column(JSONB, nullable=False)  # flexible: string, list, or dict depending on type
+    correct_answer = Column(JSONB, nullable=False)  # flexible: string, list, or dict
+    skill_type = Column(String, nullable=True)      # "detail", "inference", "vocabulary", "main_idea"
 
 
 class ReadingAttempt(Base):
@@ -33,8 +35,21 @@ class ReadingAttempt(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     passage_id = Column(Integer, ForeignKey("reading_passages.id"), nullable=False)
-    answers = Column(JSONB, nullable=False)   # {question_id: user_answer}
     score = Column(Integer, nullable=True)
     total_questions = Column(Integer, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    skill_type = Column(String, nullable=True)  # "detail", "inference", "vocabulary", "main_idea"
+
+    user = relationship("User", back_populates="reading_attempts")
+    answer_records = relationship("ReadingAnswerRecord", backref="attempt")
+
+
+class ReadingAnswerRecord(Base):
+    __tablename__ = "reading_answer_records"
+
+    id = Column(Integer, primary_key=True, index=True)
+    attempt_id = Column(Integer, ForeignKey("reading_attempts.id"), nullable=False)
+    question_id = Column(Integer, ForeignKey("reading_questions.id"), nullable=False)
+    user_answer = Column(Text, nullable=False)
+    is_correct = Column(Boolean, nullable=False)
+    skill_type = Column(String, nullable=True) # denormalized copy for fast analytics queries
+    question = relationship("ReadingQuestion") 
