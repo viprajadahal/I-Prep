@@ -1,165 +1,169 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import {
-  PenTool,
-  Clock,
-  CheckCircle2,
-  PlayCircle,
-} from 'lucide-react';
-import { writingLessons } from '../../data/mockData';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
+import writingService from '../../services/writingService';
+import { ACADEMIC_STRUCTURE, GENERAL_STRUCTURE } from '../../constants/writingCategories';
+import WritingHeader from './writing/WritingHeader';
+import StatisticsCards from './writing/StatisticsCards';
+import FilterBar from './writing/FilterBar';
+import TaskSection from './writing/TaskSection';
+import RecentPractice from './writing/RecentPractice';
+import ProgressPanel from './writing/ProgressPanel';
+import LearningPath from './writing/LearningPath';
 
 const WritingDashboard = () => {
-  const completedCount = writingLessons.filter((l) => l.completed).length;
-  const avgScore = writingLessons.filter((l) => l.completed && l.score > 0)
-    .reduce((sum, l) => sum + l.score, 0) / completedCount || 0;
-  const task1Count = writingLessons.filter((l) => l.type === 'task1').length;
-  const task2Count = writingLessons.filter((l) => l.type === 'task2').length;
+  const navigate = useNavigate();
+  const [module, setModule] = useState('academic');
+  const [prompts, setPrompts] = useState([]);
+  const [essays, setEssays] = useState([]);
+  const [history, setHistory] = useState([]);
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState({
+    search: '',
+    task: 'all',
+    difficulty: 'all',
+    category: 'all',
+    sort: 'newest',
+  });
 
-  const difficultyColors = {
-    Beginner: 'bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400',
-    Intermediate: 'bg-yellow-50 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400',
-    Advanced: 'bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400',
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [promptsRes, essaysRes, historyRes] = await Promise.all([
+          writingService.getPrompts(),
+          writingService.getEssays(),
+          writingService.getHistory(),
+        ]);
+        setPrompts(promptsRes.data);
+        setEssays(essaysRes.data);
+        setHistory(historyRes.data);
+
+        const resultsArr = [];
+        for (const essay of essaysRes.data) {
+          try {
+            const r = await writingService.getResult(essay.id);
+            resultsArr.push(r.data);
+          } catch {}
+        }
+        setResults(resultsArr);
+      } catch (err) {
+        console.error('Failed to load writing data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const completedIds = useMemo(() => {
+    const titles = new Set(essays.map(e => e.title).filter(Boolean));
+    return new Set(prompts.filter(p => titles.has(p.title)).map(p => p.id));
+  }, [essays, prompts]);
+
+  const filteredPrompts = useMemo(() => {
+    let list = prompts.filter(p => p.module === module);
+
+    if (filters.task !== 'all') {
+      list = list.filter(p => p.task_type === filters.task);
+    }
+    if (filters.difficulty !== 'all') {
+      list = list.filter(p => p.difficulty === filters.difficulty);
+    }
+    if (filters.search) {
+      const q = filters.search.toLowerCase();
+      list = list.filter(p =>
+        p.title.toLowerCase().includes(q) ||
+        (p.subtype && p.subtype.toLowerCase().includes(q)) ||
+        p.prompt_text.toLowerCase().includes(q)
+      );
+    }
+    if (filters.category !== 'all') {
+      const catMap = {
+        graphs: ['graphs', 'line_graph', 'pie_chart', 'mixed_charts'],
+        tables: ['tables'],
+        maps: ['maps'],
+        process: ['process'],
+        letters: ['formal_letter', 'semi_formal_letter', 'informal_letter'],
+        essays: ['opinion', 'discussion', 'problem_solution', 'advantages', 'double_question'],
+      };
+      const allowed = catMap[filters.category] || [];
+      if (allowed.length > 0) {
+        list = list.filter(p => allowed.includes(p.subtype));
+      }
+    }
+
+    if (filters.sort === 'difficulty') {
+      const order = { beginner: 0, intermediate: 1, advanced: 2 };
+      list = [...list].sort((a, b) => (order[a.difficulty] || 1) - (order[b.difficulty] || 1));
+    } else if (filters.sort === 'completed') {
+      list = [...list].sort((a, b) => {
+        const aC = completedIds.has(a.id) ? 0 : 1;
+        const bC = completedIds.has(b.id) ? 0 : 1;
+        return aC - bC;
+      });
+    }
+
+    return list;
+  }, [prompts, module, filters, completedIds]);
+
+  const structure = module === 'academic' ? ACADEMIC_STRUCTURE : GENERAL_STRUCTURE;
+
+  const handleStart = (prompt) => {
+    navigate(`/dashboard/writing/${prompt.id}`, { state: { prompt } });
   };
+
+  const handleContinue = (essay) => {
+    const prompt = prompts.find(p => p.title === essay.title);
+    if (prompt) {
+      navigate(`/dashboard/writing/${prompt.id}`, { state: { prompt } });
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 size={32} className="animate-spin text-violet-500" />
+        <span className="ml-3 text-gray-500 dark:text-gray-400">Loading writing data...</span>
+      </div>
+    );
+  }
 
   return (
     <div>
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-8"
-      >
-        <div className="flex items-center gap-3 mb-1">
-          <div className="w-10 h-10 rounded-xl bg-violet-50 dark:bg-gray-800 flex items-center justify-center">
-            <PenTool size={20} className="text-violet-500" />
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Writing Practice
-          </h1>
+      <WritingHeader module={module} onModuleChange={setModule} />
+      <StatisticsCards prompts={prompts} essays={essays} history={history} />
+      <FilterBar filters={filters} onFilterChange={setFilters} module={module} />
+
+      {essays.length > 0 && (
+        <RecentPractice essays={essays} results={results} onContinue={handleContinue} />
+      )}
+
+      {Object.entries(structure).map(([taskKey, taskInfo]) => {
+        const taskPrompts = filteredPrompts.filter(p => p.task_type === taskKey);
+        return (
+          <TaskSection
+            key={`${module}-${taskKey}`}
+            taskLabel={taskInfo.label}
+            description={taskInfo.description}
+            time={taskInfo.time}
+            minWords={taskInfo.minWords}
+            prompts={taskPrompts}
+            completedIds={completedIds}
+            onStart={handleStart}
+          />
+        );
+      })}
+
+      {filteredPrompts.length === 0 && (
+        <div className="text-center py-16 text-gray-400">
+          No practice types match your filters. Try adjusting the search or filters.
         </div>
-        <p className="text-gray-500 dark:text-gray-400">
-          Master IELTS Task 1 and Task 2 with structured lessons and AI feedback
-        </p>
-      </motion.div>
+      )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-white dark:bg-surface-cardDark rounded-2xl p-5 shadow-soft border border-gray-50 dark:border-gray-800"
-        >
-          <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-            Writing Progress
-          </div>
-          <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
-            {completedCount}/{writingLessons.length}
-          </div>
-          <div className="w-full h-2 bg-gray-100 dark:bg-gray-700 rounded-full mt-3">
-            <div
-              className="h-2 bg-gradient-accent rounded-full"
-              style={{ width: `${(completedCount / writingLessons.length) * 100}%` }}
-            />
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-white dark:bg-surface-cardDark rounded-2xl p-5 shadow-soft border border-gray-50 dark:border-gray-800"
-        >
-          <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-            Average Score
-          </div>
-          <div className="text-3xl font-bold text-gray-900 dark:text-white">
-            {avgScore > 0 ? `${avgScore}%` : 'N/A'}
-          </div>
-          <div className="text-xs text-gray-400 mt-2">
-            Based on {completedCount} completed lessons
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="bg-white dark:bg-surface-cardDark rounded-2xl p-5 shadow-soft border border-gray-50 dark:border-gray-800"
-        >
-          <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-            Task Breakdown
-          </div>
-          <div className="flex items-center gap-4 mt-2">
-            <div>
-              <span className="text-lg font-bold text-gray-900 dark:text-white">
-                {task1Count}
-              </span>
-              <span className="text-xs text-gray-400 ml-1">Task 1</span>
-            </div>
-            <div>
-              <span className="text-lg font-bold text-gray-900 dark:text-white">
-                {task2Count}
-              </span>
-              <span className="text-xs text-gray-400 ml-1">Task 2</span>
-            </div>
-          </div>
-        </motion.div>
-      </div>
-
-      <div className="space-y-4">
-        {writingLessons.map((lesson, index) => (
-          <motion.div
-            key={lesson.id}
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.05 + 0.4 }}
-            whileHover={{ y: -2 }}
-            className="bg-white dark:bg-surface-cardDark rounded-2xl p-5 shadow-soft border border-gray-50 dark:border-gray-800 hover:border-gray-200 dark:hover:border-gray-600 transition-all"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <h3 className="text-base font-bold text-gray-900 dark:text-white">
-                    {lesson.title}
-                  </h3>
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${difficultyColors[lesson.difficulty]}`}>
-                    {lesson.difficulty}
-                  </span>
-                  <span className="px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-xs text-gray-500 dark:text-gray-400 capitalize">
-                    {lesson.type}
-                  </span>
-                </div>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-                  {lesson.description}
-                </p>
-                <div className="flex items-center gap-3 text-xs text-gray-400">
-                  <span className="flex items-center gap-1">
-                    <Clock size={12} />
-                    {lesson.duration}
-                  </span>
-                  {lesson.completed && (
-                    <span className="flex items-center gap-1 text-green-500">
-                      <CheckCircle2 size={12} />
-                      Score: {lesson.score}%
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 ml-4">
-                {lesson.completed ? (
-                  <button className="px-4 py-2 rounded-xl bg-gray-50 dark:bg-gray-800 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                    Review
-                  </button>
-                ) : (
-                  <button className="gradient-btn text-sm !py-2 flex items-center gap-1.5">
-                    <PlayCircle size={16} />
-                    Start
-                  </button>
-                )}
-              </div>
-            </div>
-          </motion.div>
-        ))}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8 mb-8">
+        <ProgressPanel prompts={prompts} essays={essays} />
+        <LearningPath essays={essays} history={history} />
       </div>
     </div>
   );

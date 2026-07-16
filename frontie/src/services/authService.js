@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api/v1';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -20,16 +20,24 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('iprep-token');
-      window.location.href = '/login';
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }
 );
 
 const authService = {
-  login: (data) => api.post('/auth/login', data),
-  register: (data) => api.post('/auth/register', data),
-  logout: () => api.post('/auth/logout'),
+  login: (email, password) => api.post('/auth/login', null, { params: { email, password } }),
+  register: (data) => api.post('/auth/register', {
+    email: data.email,
+    full_name: data.name,
+    password: data.password,
+    target_band: data.targetBand,
+  }),
+  me: () => api.get('/auth/me'),
+  logout: () => { localStorage.removeItem('iprep-token'); },
   refreshToken: () => api.post('/auth/refresh'),
   forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
   resetPassword: (token, password) => api.post('/auth/reset-password', { token, password }),

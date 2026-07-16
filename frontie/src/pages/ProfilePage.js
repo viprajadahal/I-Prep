@@ -62,7 +62,7 @@ const ProfilePage = () => {
               </button>
             </div>
             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
-              {user?.name || 'Alex Johnson'}
+              {user?.full_name || user?.name || 'Student'}
             </h2>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
               {user?.email || 'alex@example.com'}
@@ -91,7 +91,7 @@ const ProfilePage = () => {
               <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-800">
                 <Target size={16} className="text-gray-400" />
                 <span className="text-sm text-gray-600 dark:text-gray-300">
-                  Target Band: {user?.targetBand || 7.5}
+                  Target Band: {user?.target_band || user?.targetBand || 7.0}
                 </span>
               </div>
               <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-800">

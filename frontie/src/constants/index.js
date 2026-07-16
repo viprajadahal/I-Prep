@@ -56,7 +56,7 @@ export const API_ENDPOINTS = {
   PROGRESS_OVERALL: '/progress/overall',
   PROGRESS_WEEKLY: '/progress/weekly',
   READING_PASSAGES: '/reading/passages',
-  WRITING_TASKS: '/writing/tasks',
+  WRITING_PROMPTS: '/writing/prompts',
   LISTENING_PASSAGES: '/listening/passages',
   SPEAKING_TOPICS: '/speaking/topics',
   MOCK_TESTS: '/mock-tests',
