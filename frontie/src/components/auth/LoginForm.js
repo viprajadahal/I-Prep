@@ -18,10 +18,14 @@ const LoginForm = () => {
   const [formData, setFormData] = React.useState({ email: '', password: '' });
   const [remember, setRemember] = React.useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    login(formData.email, formData.password);
-    navigate('/dashboard');
+    try {
+      await login(formData.email, formData.password);
+      navigate('/dashboard');
+    } catch (err) {
+      alert(err.response?.data?.detail || 'Login failed');
+    }
   };
 
   return (

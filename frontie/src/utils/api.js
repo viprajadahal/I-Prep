@@ -14,13 +14,34 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  console.log(`[API REQUEST] ${config.method.toUpperCase()} ${config.baseURL}${config.url}`);
+  console.log('[API REQUEST HEADERS]', config.headers);
+  if (config.params) {
+    console.log('[API REQUEST PARAMS]', config.params);
+  }
+  if (config.data && !(config.data instanceof FormData)) {
+    console.log('[API REQUEST DATA]', config.data);
+  }
   return config;
 });
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log(`[API RESPONSE] ${response.config.method.toUpperCase()} ${response.config.baseURL}${response.config.url} - Status: ${response.status}`);
+    console.log('[API RESPONSE DATA]', response.data);
+    return response;
+  },
   (error) => {
-    if (error.response?.status === 401) {
+    if (error.response) {
+      console.error(`[API ERROR] ${error.config.method.toUpperCase()} ${error.config.baseURL}${error.config.url} - Status: ${error.response.status}`);
+      console.error('[API ERROR RESPONSE]', error.response.data);
+      console.error('[API ERROR HEADERS]', error.response.headers);
+    } else if (error.request) {
+      console.error('[API ERROR] No response received', error.request);
+    } else {
+      console.error('[API ERROR]', error.message);
+    }
+    if (error.response?.status === 401 && !error.config.url.includes('/resources')) {
       localStorage.removeItem('iprep-token');
       window.location.href = '/login';
     }

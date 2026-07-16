@@ -28,10 +28,14 @@ const RegisterForm = () => {
     country: 'India',
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    register(formData);
-    navigate('/dashboard');
+    try {
+      await register(formData);
+      navigate('/dashboard');
+    } catch (err) {
+      alert(err.response?.data?.detail || 'Registration failed');
+    }
   };
 
   const handleChange = (field, value) => {

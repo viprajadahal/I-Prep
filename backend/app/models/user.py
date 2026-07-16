@@ -5,11 +5,16 @@ from sqlalchemy.orm import relationship # wrote this to import writing_attempts 
 
 class User(Base):
     __tablename__ = "users"
- 
+   
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, index=True, nullable=False)
     full_name = Column(String, nullable=False)
     hashed_password = Column(String, nullable=False)
     target_band = Column(Float, default=7.0)
+    role = Column(String, default="student", nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now()) 
-    reading_attempts = relationship("ReadingAttempt", back_populates="user") #this one
+
+
+def setup_user_relationships():
+    User.reading_attempts = relationship("ReadingAttempt", back_populates="user")
+    User.study_resources = relationship("StudyResource", back_populates="uploader")

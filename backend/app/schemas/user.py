@@ -6,6 +6,7 @@ class UserCreate(BaseModel):
     full_name: str
     password: str
     target_band: float = 7.0
+    role: str = "student"
 
 # what we send back (never include password)
 class UserResponse(BaseModel):
@@ -13,6 +14,7 @@ class UserResponse(BaseModel):
     email: str
     full_name: str
     target_band: float
+    role: str
 
     class Config:
         from_attributes = True

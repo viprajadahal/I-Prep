@@ -26,13 +26,13 @@ const AppRoutes = () => {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
 
-      <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-      <Route path="/dashboard/writing" element={<ProtectedRoute><WritingPage /></ProtectedRoute>} />
-      <Route path="/dashboard/reading" element={<ProtectedRoute><ReadingPage /></ProtectedRoute>} />
-      <Route path="/dashboard/listening" element={<ProtectedRoute><ListeningPage /></ProtectedRoute>} />
-      <Route path="/dashboard/speaking" element={<ProtectedRoute><SpeakingPage /></ProtectedRoute>} />
-      <Route path="/dashboard/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
-      <Route path="/dashboard/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+       <Route path="/dashboard" element={<DashboardPage />} />
+       <Route path="/dashboard/writing" element={<WritingPage />} />
+       <Route path="/dashboard/reading" element={<ReadingPage />} />
+       <Route path="/dashboard/listening" element={<ListeningPage />} />
+       <Route path="/dashboard/speaking" element={<SpeakingPage />} />
+       <Route path="/dashboard/settings" element={<SettingsPage />} />
+       <Route path="/dashboard/profile" element={<ProfilePage />} />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

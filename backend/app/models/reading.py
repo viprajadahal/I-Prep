@@ -4,8 +4,6 @@ from sqlalchemy.sql import func
 from app.database import Base
 from sqlalchemy.orm import relationship
 
-user = relationship("User", back_populates="reading_attempts")
-
 class ReadingPassage(Base):
     __tablename__ = "reading_passages"
 
@@ -38,3 +36,5 @@ class ReadingAttempt(Base):
     total_questions = Column(Integer, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     skill_type = Column(String, nullable=True)  # "detail", "inference", "vocabulary", "main_idea"
+    
+    user = relationship("User", back_populates="reading_attempts")
