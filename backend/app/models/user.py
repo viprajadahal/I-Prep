@@ -22,6 +22,10 @@ class User(Base):
 
     target_band = Column(Float, default=7.0)
 
+    current_speaking_level = Column(String(20), default="Beginner")
+
+    current_listening_level = Column(String(20), default="Beginner")
+
     created_at = Column(
         DateTime(timezone=True),
         server_default=func.now()
@@ -330,3 +334,4 @@ class ReadingAttempt(Base):
         "User",
         back_populates="reading_attempts"
     )
+
