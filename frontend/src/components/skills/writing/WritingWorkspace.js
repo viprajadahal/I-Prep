@@ -138,8 +138,8 @@ const WritingWorkspace = ({ prompt, onBack }) => {
 
   const handleSubmit = async (text) => {
     const submitText = text || essayText;
-    if (submitText.trim().length < 10) {
-      setSubmitError('Essay must be at least 10 characters.');
+    if (wordCount < minWords) {
+      setSubmitError(`Essay must be at least ${minWords} words. Current: ${wordCount} words.`);
       return;
     }
     setSubmitting(true);
@@ -150,6 +150,7 @@ const WritingWorkspace = ({ prompt, onBack }) => {
     try {
       const submitRes = await writingService.submitEssay({
         title: prompt.title,
+        prompt_id: prompt.id,
         text: submitText,
       });
       const essayId = submitRes.data.id;
@@ -312,7 +313,7 @@ const WritingWorkspace = ({ prompt, onBack }) => {
 
             <button
               onClick={() => handleSubmit()}
-              disabled={submitting || evaluating || essayText.trim().length < 10}
+              disabled={submitting || evaluating || wordCount < minWords}
               className="gradient-btn text-sm !py-3 !px-8 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {submitting ? (

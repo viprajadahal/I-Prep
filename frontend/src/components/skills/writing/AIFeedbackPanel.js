@@ -94,8 +94,8 @@ const AIFeedbackPanel = ({ result, prompt, essayText, onBack, onRetry }) => {
           </div>
         </div>
 
-        <div className="flex items-center justify-center gap-8 mb-8">
-          <ScoreRing label="Task Achievement" score={result.overall_score} color="#7c3aed" />
+        <div className="flex items-center justify-center gap-6 mb-8 flex-wrap">
+          <ScoreRing label="Task Achievement" score={result.task_achievement_score || result.overall_score} color="#7c3aed" />
           <ScoreRing label="Coherence" score={result.coherence_score} color="#4c6ef5" />
           <ScoreRing label="Vocabulary" score={result.vocabulary_score} color="#f59e0b" />
           <ScoreRing label="Grammar" score={result.grammar_score} color="#10b981" />

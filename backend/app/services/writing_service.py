@@ -8,17 +8,36 @@ from app.models.user import Essay, WritingPrompt, WritingResult
 from app.nlp.grammar import GrammarChecker
 from app.nlp.vocabulary import VocabularyAnalyzer
 from app.nlp.coherence import CoherenceAnalyzer
+from app.nlp.task_achievement import TaskAchievementAnalyzer
 from app.schemas.writing import EssaySubmit, WritingEvaluateRequest
 from app.utils.helpers import count_words, serialize_to_json
 
 
 class WritingService:
+    MIN_WORDS = {"Task 1": 150, "Task 2": 250}
+
     @staticmethod
     async def submit_essay(db: AsyncSession, user_id: int, essay_data: EssaySubmit) -> Essay:
         word_count = count_words(essay_data.text)
 
+        prompt = None
+        if essay_data.prompt_id:
+            prompt_result = await db.execute(
+                select(WritingPrompt).filter(WritingPrompt.id == essay_data.prompt_id)
+            )
+            prompt = prompt_result.scalar_one_or_none()
+
+        task_type = prompt.task_type if prompt else "Task 2"
+        min_words = WritingService.MIN_WORDS.get(task_type, 250)
+        if word_count < min_words:
+            raise ValueError(
+                f"Essay must be at least {min_words} words for {task_type}. "
+                f"Current word count: {word_count}."
+            )
+
         essay = Essay(
             user_id=user_id,
+            prompt_id=essay_data.prompt_id,
             title=essay_data.title,
             text=essay_data.text,
             word_count=word_count,
@@ -45,10 +64,24 @@ class WritingService:
         vocab_result = VocabularyAnalyzer.analyze(essay.text)
         coherence_result = CoherenceAnalyzer.analyze(essay.text)
 
+        prompt_text = ""
+        task_type = "Task 2"
+        if essay.prompt_id:
+            prompt_result = await db.execute(
+                select(WritingPrompt).filter(WritingPrompt.id == essay.prompt_id)
+            )
+            prompt = prompt_result.scalar_one_or_none()
+            if prompt:
+                prompt_text = prompt.prompt_text
+                task_type = prompt.task_type
+
+        task_result = TaskAchievementAnalyzer.analyze(essay.text, prompt_text, task_type)
+
         overall_score = round(
-            grammar_result["score"] * 0.35
-            + vocab_result["score"] * 0.35
-            + coherence_result["score"] * 0.30,
+            grammar_result["score"] * 0.25
+            + vocab_result["score"] * 0.25
+            + coherence_result["score"] * 0.25
+            + task_result["score"] * 0.25,
             2,
         )
 
@@ -81,6 +114,21 @@ class WritingService:
         else:
             feedback_parts.append("Coherence: Poorly organized essay. Work on paragraph structure and logical flow.")
 
+        if task_result["score"] >= 80:
+            feedback_parts.append("Task Achievement: Excellent response to the prompt with strong topic coverage.")
+        elif task_result["score"] >= 60:
+            feedback_parts.append("Task Achievement: Good response but some aspects of the prompt could be addressed more fully.")
+        elif task_result["score"] >= 40:
+            feedback_parts.append("Task Achievement: Partial response. Ensure you address all parts of the question.")
+        else:
+            feedback_parts.append("Task Achievement: Weak response. Focus on directly answering the prompt.")
+
+        if not task_result["meets_word_count"]:
+            feedback_parts.append(
+                f"Word Count: Your essay has {task_result['word_count']} words. "
+                f"Minimum required is {task_result['min_words']} words."
+            )
+
         feedback = "\n\n".join(feedback_parts)
 
         writing_result = WritingResult(
@@ -89,6 +137,7 @@ class WritingService:
             grammar_score=grammar_result["score"],
             vocabulary_score=vocab_result["score"],
             coherence_score=coherence_result["score"],
+            task_achievement_score=task_result["score"],
             overall_score=overall_score,
             feedback=feedback,
             grammar_errors=serialize_to_json(grammar_result["errors"]),
@@ -105,6 +154,7 @@ class WritingService:
             existing.grammar_score = grammar_result["score"]
             existing.vocabulary_score = vocab_result["score"]
             existing.coherence_score = coherence_result["score"]
+            existing.task_achievement_score = task_result["score"]
             existing.overall_score = overall_score
             existing.feedback = feedback
             existing.grammar_errors = serialize_to_json(grammar_result["errors"])
@@ -124,6 +174,7 @@ class WritingService:
             "grammar_score": grammar_result["score"],
             "vocabulary_score": vocab_result["score"],
             "coherence_score": coherence_result["score"],
+            "task_achievement_score": task_result["score"],
             "overall_score": overall_score,
             "feedback": feedback,
             "grammar_errors": grammar_result["errors"],
@@ -252,6 +303,7 @@ class WritingService:
                 "grammar_score": r.grammar_score,
                 "vocabulary_score": r.vocabulary_score,
                 "coherence_score": r.coherence_score,
+                "task_achievement_score": r.task_achievement_score,
                 "feedback": r.feedback,
                 "date": r.created_at,
             }

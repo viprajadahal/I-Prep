@@ -6,12 +6,14 @@ from pydantic import BaseModel, Field, constr
 
 class EssaySubmit(BaseModel):
     title: Optional[str] = None
+    prompt_id: Optional[int] = None
     text: constr(min_length=10) = Field(..., description="Essay text content")
 
 
 class EssayResponse(BaseModel):
     id: int
     user_id: int
+    prompt_id: Optional[int] = None
     title: Optional[str]
     text: str
     word_count: int
@@ -57,6 +59,7 @@ class WritingResultResponse(BaseModel):
     grammar_score: float
     vocabulary_score: float
     coherence_score: float
+    task_achievement_score: float
     overall_score: float
     feedback: Optional[str]
     grammar_errors: Optional[str]
@@ -78,6 +81,7 @@ class WritingEvaluationResponse(BaseModel):
     grammar_score: float
     vocabulary_score: float
     coherence_score: float
+    task_achievement_score: float
     overall_score: float
     feedback: str
     grammar_errors: List[GrammarError]
@@ -127,6 +131,7 @@ class ScoreItem(BaseModel):
     grammar_score: float
     vocabulary_score: float
     coherence_score: float
+    task_achievement_score: float
     feedback: Optional[str] = None
     date: datetime
 

@@ -68,6 +68,12 @@ class Essay(Base):
         nullable=False
     )
 
+    prompt_id = Column(
+        Integer,
+        ForeignKey("writing_prompts.id"),
+        nullable=True,
+    )
+
     title = Column(String(200))
 
     text = Column(Text, nullable=False)
@@ -116,6 +122,8 @@ class WritingResult(Base):
     vocabulary_score = Column(Float, default=0.0)
 
     coherence_score = Column(Float, default=0.0)
+
+    task_achievement_score = Column(Float, default=0.0)
 
     overall_score = Column(Float, default=0.0)
 
