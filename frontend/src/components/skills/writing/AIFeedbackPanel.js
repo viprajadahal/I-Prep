@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   ArrowLeft,
@@ -47,16 +47,22 @@ const ScoreRing = ({ label, score, color, size = 64 }) => {
 };
 
 const AIFeedbackPanel = ({ result, prompt, essayText, onBack, onRetry }) => {
-  const getBandLabel = (score) => {
-    const band = score / 10;
-    if (band >= 8.0) return 'Excellent';
-    if (band >= 7.0) return 'Very Good';
-    if (band >= 6.0) return 'Good';
-    if (band >= 5.0) return 'Modest';
+  const [showAllErrors, setShowAllErrors] = useState(false);
+  const toBandScore = (score) => {
+    const raw = score / 10;
+    return (Math.round(raw * 2) / 2).toFixed(1);
+  };
+
+  const getBandLabel = (band) => {
+    const b = parseFloat(band);
+    if (b >= 8.0) return 'Excellent';
+    if (b >= 7.0) return 'Very Good';
+    if (b >= 6.0) return 'Good';
+    if (b >= 5.0) return 'Modest';
     return 'Needs Improvement';
   };
 
-  const bandScore = (result.overall_score / 10).toFixed(1);
+  const bandScore = toBandScore(result.overall_score);
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -123,10 +129,10 @@ const AIFeedbackPanel = ({ result, prompt, essayText, onBack, onRetry }) => {
         {result.grammar_errors && result.grammar_errors.length > 0 && (
           <div className="mb-6">
             <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-              <AlertTriangle size={16} /> Grammar Errors
+              <AlertTriangle size={16} /> Grammar Errors ({result.grammar_errors.length} total)
             </h3>
             <div className="space-y-2">
-              {result.grammar_errors.slice(0, 5).map((err, idx) => (
+              {(showAllErrors ? result.grammar_errors : result.grammar_errors.slice(0, 5)).map((err, idx) => (
                 <div key={idx} className="flex items-start gap-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-xl text-sm">
                   <AlertTriangle size={14} className="text-red-400 mt-0.5 shrink-0" />
                   <div>
@@ -138,6 +144,14 @@ const AIFeedbackPanel = ({ result, prompt, essayText, onBack, onRetry }) => {
                 </div>
               ))}
             </div>
+            {result.grammar_errors.length > 5 && (
+              <button
+                onClick={() => setShowAllErrors(!showAllErrors)}
+                className="mt-3 text-sm text-violet-600 dark:text-violet-400 hover:underline"
+              >
+                {showAllErrors ? 'Show less' : `Show ${result.grammar_errors.length - 5} more errors`}
+              </button>
+            )}
           </div>
         )}
 

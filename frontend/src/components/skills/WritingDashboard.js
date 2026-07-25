@@ -30,23 +30,16 @@ const WritingDashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [promptsRes, essaysRes, historyRes] = await Promise.all([
+        const [promptsRes, essaysRes, historyRes, resultsRes] = await Promise.all([
           writingService.getPrompts(),
           writingService.getEssays(),
           writingService.getHistory(),
+          writingService.getResultsBatch(),
         ]);
         setPrompts(promptsRes.data);
         setEssays(essaysRes.data);
         setHistory(historyRes.data);
-
-        const resultsArr = [];
-        for (const essay of essaysRes.data) {
-          try {
-            const r = await writingService.getResult(essay.id);
-            resultsArr.push(r.data);
-          } catch {}
-        }
-        setResults(resultsArr);
+        setResults(resultsRes.data);
       } catch (err) {
         console.error('Failed to load writing data:', err);
       } finally {
@@ -57,9 +50,9 @@ const WritingDashboard = () => {
   }, []);
 
   const completedIds = useMemo(() => {
-    const titles = new Set(essays.map(e => e.title).filter(Boolean));
-    return new Set(prompts.filter(p => titles.has(p.title)).map(p => p.id));
-  }, [essays, prompts]);
+    const promptIds = new Set(essays.map(e => e.prompt_id).filter(Boolean));
+    return promptIds;
+  }, [essays]);
 
   const filteredPrompts = useMemo(() => {
     let list = prompts.filter(p => p.module === module);
@@ -132,7 +125,7 @@ const WritingDashboard = () => {
   return (
     <div>
       <WritingHeader module={module} onModuleChange={setModule} />
-      <StatisticsCards prompts={prompts} essays={essays} history={history} />
+      <StatisticsCards prompts={prompts} essays={essays} history={history} results={results} />
       <FilterBar filters={filters} onFilterChange={setFilters} module={module} />
 
       {essays.length > 0 && (

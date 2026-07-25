@@ -82,10 +82,12 @@ async def evaluate_essay(
 
 @router.get("/essays", response_model=list[EssayResponse])
 async def get_user_essays(
+    limit: int = 50,
+    offset: int = 0,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    essays = await WritingService.get_user_essays(db, current_user.id)
+    essays = await WritingService.get_user_essays(db, current_user.id, limit=limit, offset=offset)
     return essays
 
 
@@ -103,10 +105,12 @@ async def get_essay(
 
 @router.get("/history", response_model=list[WritingHistoryItem])
 async def get_writing_history(
+    limit: int = 50,
+    offset: int = 0,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    return await WritingService.get_writing_history(db, current_user.id)
+    return await WritingService.get_writing_history(db, current_user.id, limit=limit, offset=offset)
 
 
 @router.get("/results/{essay_id}", response_model=WritingResultResponse)
@@ -126,3 +130,14 @@ async def get_writing_result(
     if not wr:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Writing result not found")
     return wr
+
+
+@router.get("/results-batch", response_model=list[WritingResultResponse])
+async def get_results_batch(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(WritingResult).filter(WritingResult.user_id == current_user.id)
+    )
+    return list(result.scalars().all())

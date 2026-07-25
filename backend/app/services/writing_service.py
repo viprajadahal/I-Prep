@@ -183,9 +183,11 @@ class WritingService:
         }
 
     @staticmethod
-    async def get_user_essays(db: AsyncSession, user_id: int) -> list:
+    async def get_user_essays(db: AsyncSession, user_id: int, limit: int = 50, offset: int = 0) -> list:
         result = await db.execute(
             select(Essay).filter(Essay.user_id == user_id)
+            .order_by(Essay.created_at.desc())
+            .limit(limit).offset(offset)
         )
         return list(result.scalars().all())
 
@@ -200,11 +202,12 @@ class WritingService:
         return result.scalar_one_or_none()
 
     @staticmethod
-    async def get_writing_history(db: AsyncSession, user_id: int) -> list:
+    async def get_writing_history(db: AsyncSession, user_id: int, limit: int = 50, offset: int = 0) -> list:
         result = await db.execute(
             select(WritingResult)
             .filter(WritingResult.user_id == user_id)
             .order_by(WritingResult.created_at.asc())
+            .limit(limit).offset(offset)
         )
         results = list(result.scalars().all())
 

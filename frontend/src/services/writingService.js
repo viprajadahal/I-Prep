@@ -44,6 +44,7 @@ const writingService = {
   getEssay: (essayId) => api.get(`/writing/essays/${essayId}`),
   getHistory: () => api.get('/writing/history'),
   getResult: (essayId) => api.get(`/writing/results/${essayId}`),
+  getResultsBatch: () => api.get('/writing/results-batch'),
   getAssistant: (promptId) => api.get(`/writing/assistant/${promptId}`),
 };
 

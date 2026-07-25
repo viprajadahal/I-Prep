@@ -70,6 +70,9 @@ const WritingWorkspace = ({ prompt, onBack }) => {
           if (t <= 1) {
             clearInterval(timerRef.current);
             setTimerRunning(false);
+            if (essayText.trim().length > 10 && !submitting && !evaluating && !result) {
+              handleSubmit();
+            }
             return 0;
           }
           return t - 1;

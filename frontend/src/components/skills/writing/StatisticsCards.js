@@ -22,19 +22,32 @@ const StatCard = ({ icon: Icon, label, value, subtitle, color, delay }) => (
   </motion.div>
 );
 
-const StatisticsCards = ({ prompts, essays, history }) => {
+const StatisticsCards = ({ prompts, essays, history, results }) => {
   const completedCount = essays.length;
   const totalPrompts = prompts.length;
   const progressPct = totalPrompts > 0 ? Math.round((completedCount / totalPrompts) * 100) : 0;
 
+  const toBand = (score) => (Math.round((score / 10) * 2) / 2).toFixed(1);
+
   const avgScore = history.length > 0
-    ? (history.reduce((s, h) => s + h.score, 0) / history.length).toFixed(1)
+    ? toBand(history.reduce((s, h) => s + h.score, 0) / history.length)
     : 'N/A';
+
+  const getAverageByTask = (taskType) => {
+    if (!results || results.length === 0) return 'N/A';
+    const taskScores = results.filter(r => {
+      const essay = essays.find(e => e.id === r.essay_id);
+      return essay && essays.some(e => e.id === r.essay_id && e.title &&
+        prompts.some(p => p.task_type === taskType && p.title === e.title));
+    }).map(r => r.overall_score);
+    if (taskScores.length === 0) return 'N/A';
+    return toBand(taskScores.reduce((a, b) => a + b, 0) / taskScores.length);
+  };
 
   const task1Prompts = prompts.filter(p => p.task_type === 'Task 1');
   const task2Prompts = prompts.filter(p => p.task_type === 'Task 2');
-  const task1Avg = 'N/A';
-  const task2Avg = 'N/A';
+  const task1Avg = getAverageByTask('Task 1');
+  const task2Avg = getAverageByTask('Task 2');
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
