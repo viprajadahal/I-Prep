@@ -161,12 +161,12 @@ const LoginForm = () => {
               className="text-sm font-medium text-primary-600 hover:text-primary-700"
             >
               Create account
-            </Link>
+          </Link>
           </div>
         </motion.div>
       </div>
     </div>
   );
-
+};
 
 export default LoginForm;

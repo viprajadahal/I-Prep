@@ -9,6 +9,7 @@ from app.nlp.grammar import GrammarChecker
 from app.nlp.vocabulary import VocabularyAnalyzer
 from app.nlp.coherence import CoherenceAnalyzer
 from app.nlp.task_achievement import TaskAchievementAnalyzer
+
 from app.schemas.writing import EssaySubmit, WritingEvaluateRequest
 from app.utils.helpers import count_words, serialize_to_json
 
@@ -28,12 +29,6 @@ class WritingService:
             prompt = prompt_result.scalar_one_or_none()
 
         task_type = prompt.task_type if prompt else "Task 2"
-        min_words = WritingService.MIN_WORDS.get(task_type, 250)
-        if word_count < min_words:
-            raise ValueError(
-                f"Essay must be at least {min_words} words for {task_type}. "
-                f"Current word count: {word_count}."
-            )
 
         essay = Essay(
             user_id=user_id,
@@ -61,7 +56,10 @@ class WritingService:
             raise ValueError("Essay not found or not owned by user")
 
         grammar_result = GrammarChecker.check_grammar(essay.text)
+        grammar_combined = grammar_result["score"] * 0.3 + grammar_result.get("grammar_range_score", 50) * 0.7
+
         vocab_result = VocabularyAnalyzer.analyze(essay.text)
+
         coherence_result = CoherenceAnalyzer.analyze(essay.text)
 
         prompt_text = ""
@@ -77,51 +75,71 @@ class WritingService:
 
         task_result = TaskAchievementAnalyzer.analyze(essay.text, prompt_text, task_type)
 
+        is_gibberish = vocab_result.get("is_gibberish", False)
+        if is_gibberish:
+            penalty = 0.15
+            grammar_combined *= penalty
+            coherence_result["score"] *= penalty
+            task_result["score"] *= penalty
+
         overall_score = round(
-            grammar_result["score"] * 0.25
+            grammar_combined * 0.25
             + vocab_result["score"] * 0.25
             + coherence_result["score"] * 0.25
             + task_result["score"] * 0.25,
             2,
         )
 
+        grammar_band = round(max(grammar_combined, 0) / 10 * 2) / 2
+        vocab_band = round(max(vocab_result["score"], 0) / 10 * 2) / 2
+        coherence_band = round(max(coherence_result["score"], 0) / 10 * 2) / 2
+        task_band = round(max(task_result["score"], 0) / 10 * 2) / 2
+
         feedback_parts = []
 
-        if grammar_result["score"] >= 80:
-            feedback_parts.append("Grammar: Excellent command of English grammar with minimal errors.")
-        elif grammar_result["score"] >= 60:
-            feedback_parts.append("Grammar: Good grammar usage, but some errors need attention.")
-        elif grammar_result["score"] >= 40:
-            feedback_parts.append("Grammar: Moderate grammar proficiency. Review basic grammar rules.")
+        if grammar_band >= 8.0:
+            feedback_parts.append("Grammatical Range & Accuracy — Band " + str(grammar_band) + ": Excellent command. Wide range of structures with minimal errors.")
+        elif grammar_band >= 7.0:
+            feedback_parts.append("Grammatical Range & Accuracy — Band " + str(grammar_band) + ": Good control. Uses a variety of complex structures with some errors.")
+        elif grammar_band >= 6.0:
+            feedback_parts.append("Grammatical Range & Accuracy — Band " + str(grammar_band) + ": Adequate range but errors occur when attempting complex sentences.")
+        elif grammar_band >= 5.0:
+            feedback_parts.append("Grammatical Range & Accuracy — Band " + str(grammar_band) + ": Limited range. Frequent errors may cause some difficulty for the reader.")
         else:
-            feedback_parts.append("Grammar: Significant grammar issues detected. Focus on fundamental grammar rules.")
+            feedback_parts.append("Grammatical Range & Accuracy — Band " + str(grammar_band) + ": Frequent basic errors. Focus on fundamental grammar and sentence structure.")
 
-        if vocab_result["score"] >= 80:
-            feedback_parts.append("Vocabulary: Rich and diverse vocabulary with advanced word usage.")
-        elif vocab_result["score"] >= 60:
-            feedback_parts.append("Vocabulary: Adequate vocabulary range. Try incorporating more advanced terms.")
-        elif vocab_result["score"] >= 40:
-            feedback_parts.append("Vocabulary: Limited vocabulary. Expand your word repertoire.")
+        if vocab_band >= 8.0:
+            feedback_parts.append("Lexical Resource — Band " + str(vocab_band) + ": Wide and sophisticated vocabulary. Skillfully uses uncommon words.")
+        elif vocab_band >= 7.0:
+            feedback_parts.append("Lexical Resource — Band " + str(vocab_band) + ": Good range. Uses some less common vocabulary with awareness of style and collocation.")
+        elif vocab_band >= 6.0:
+            feedback_parts.append("Lexical Resource — Band " + str(vocab_band) + ": Adequate range for the task. Attempts to use less common vocabulary but with some inaccuracy.")
+        elif vocab_band >= 5.0:
+            feedback_parts.append("Lexical Resource — Band " + str(vocab_band) + ": Limited range. Repetition and basic vocabulary dominate.")
         else:
-            feedback_parts.append("Vocabulary: Very limited vocabulary detected. Study IELTS vocabulary lists.")
+            feedback_parts.append("Lexical Resource — Band " + str(vocab_band) + ": Very limited vocabulary. Frequent repetition and basic word choices.")
 
-        if coherence_result["score"] >= 80:
-            feedback_parts.append("Coherence: Well-structured essay with strong logical flow and transitions.")
-        elif coherence_result["score"] >= 60:
-            feedback_parts.append("Coherence: Generally coherent but could benefit from better transitions.")
-        elif coherence_result["score"] >= 40:
-            feedback_parts.append("Coherence: Some structural issues. Improve paragraph organization and transitions.")
+        if coherence_band >= 8.0:
+            feedback_parts.append("Coherence & Cohesion — Band " + str(coherence_band) + ": Logical organization with skilled use of cohesive devices.")
+        elif coherence_band >= 7.0:
+            feedback_parts.append("Coherence & Cohesion — Band " + str(coherence_band) + ": Clear progression throughout. Uses a range of cohesive devices appropriately.")
+        elif coherence_band >= 6.0:
+            feedback_parts.append("Coherence & Cohesion — Band " + str(coherence_band) + ": Information and ideas are generally arranged coherently with adequate use of cohesive devices.")
+        elif coherence_band >= 5.0:
+            feedback_parts.append("Coherence & Cohesion — Band " + str(coherence_band) + ": Some organization but lacks overall progression. Limited use of cohesive devices.")
         else:
-            feedback_parts.append("Coherence: Poorly organized essay. Work on paragraph structure and logical flow.")
+            feedback_parts.append("Coherence & Cohesion — Band " + str(coherence_band) + ": Poorly organized. Lacks clear progression and cohesive devices.")
 
-        if task_result["score"] >= 80:
-            feedback_parts.append("Task Achievement: Excellent response to the prompt with strong topic coverage.")
-        elif task_result["score"] >= 60:
-            feedback_parts.append("Task Achievement: Good response but some aspects of the prompt could be addressed more fully.")
-        elif task_result["score"] >= 40:
-            feedback_parts.append("Task Achievement: Partial response. Ensure you address all parts of the question.")
+        if task_band >= 8.0:
+            feedback_parts.append("Task Response — Band " + str(task_band) + ": Fully addresses all parts of the task. Well-developed ideas with relevant examples.")
+        elif task_band >= 7.0:
+            feedback_parts.append("Task Response — Band " + str(task_band) + ": Addresses all parts. Main ideas are extended and supported.")
+        elif task_band >= 6.0:
+            feedback_parts.append("Task Response — Band " + str(task_band) + ": Addresses the task but some parts may be more fully covered than others.")
+        elif task_band >= 5.0:
+            feedback_parts.append("Task Response — Band " + str(task_band) + ": Addresses the task only partially. Ideas may be limited or not well developed.")
         else:
-            feedback_parts.append("Task Achievement: Weak response. Focus on directly answering the prompt.")
+            feedback_parts.append("Task Response — Band " + str(task_band) + ": Does not adequately address the task. Main ideas are unclear or irrelevant.")
 
         if not task_result["meets_word_count"]:
             feedback_parts.append(

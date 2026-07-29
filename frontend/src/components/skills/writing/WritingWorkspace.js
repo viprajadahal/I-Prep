@@ -44,6 +44,14 @@ const WritingWorkspace = ({ prompt, onBack }) => {
   const textareaRef = useRef(null);
   const timerRef = useRef(null);
   const autoSaveRef = useRef(null);
+  const essayTextRef = useRef(essayText);
+  const submittingRef = useRef(submitting);
+  const evaluatingRef = useRef(evaluating);
+  const resultRef = useRef(result);
+  essayTextRef.current = essayText;
+  submittingRef.current = submitting;
+  evaluatingRef.current = evaluating;
+  resultRef.current = result;
 
   const meta = SUBTYPE_META[prompt.subtype] || { label: prompt.title, icon: null, color: '#7c3aed' };
   const diffMeta = DIFFICULTY_META[prompt.difficulty] || DIFFICULTY_META.intermediate;
@@ -70,7 +78,8 @@ const WritingWorkspace = ({ prompt, onBack }) => {
           if (t <= 1) {
             clearInterval(timerRef.current);
             setTimerRunning(false);
-            if (essayText.trim().length > 10 && !submitting && !evaluating && !result) {
+            const txt = essayTextRef.current;
+            if (txt.trim().length > 10 && !submittingRef.current && !evaluatingRef.current && !resultRef.current) {
               handleSubmit();
             }
             return 0;
@@ -141,10 +150,6 @@ const WritingWorkspace = ({ prompt, onBack }) => {
 
   const handleSubmit = async (text) => {
     const submitText = text || essayText;
-    if (wordCount < minWords) {
-      setSubmitError(`Essay must be at least ${minWords} words. Current: ${wordCount} words.`);
-      return;
-    }
     setSubmitting(true);
     setSubmitError(null);
     setResult(null);
@@ -163,7 +168,8 @@ const WritingWorkspace = ({ prompt, onBack }) => {
       const evalRes = await writingService.evaluateEssay(essayId);
       setResult(evalRes.data);
     } catch (err) {
-      setSubmitError(err.response?.data?.detail || 'Failed to submit. Please try again.');
+      console.error('Submit error:', err.response?.status, err.response?.data, err.message);
+      setSubmitError(err.response?.data?.detail || `Error: ${err.message}`);
     } finally {
       setSubmitting(false);
       setEvaluating(false);
@@ -316,7 +322,7 @@ const WritingWorkspace = ({ prompt, onBack }) => {
 
             <button
               onClick={() => handleSubmit()}
-              disabled={submitting || evaluating || wordCount < minWords}
+              disabled={submitting || evaluating}
               className="gradient-btn text-sm !py-3 !px-8 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {submitting ? (

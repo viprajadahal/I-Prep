@@ -80,12 +80,12 @@ class Essay(Base):
 
     word_count = Column(Integer, default=0)
 
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at = Column(DateTime, default=datetime.utcnow)
 
     updated_at = Column(
         DateTime,
-        default=lambda: datetime.now(timezone.utc),
-        onupdate=lambda: datetime.now(timezone.utc)
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow
     )
 
     user = relationship(
@@ -135,7 +135,7 @@ class WritingResult(Base):
 
     coherence_details = Column(Text)
 
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at = Column(DateTime, default=datetime.utcnow)
 
     essay = relationship(
         "Essay",
@@ -167,7 +167,7 @@ class WritingPrompt(Base):
 
     image_url = Column(Text)
 
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), server_default=func.now())
+    created_at = Column(DateTime, default=datetime.utcnow, server_default=func.now())
 
 
 class ReadingPassage(Base):
@@ -185,12 +185,12 @@ class ReadingPassage(Base):
 
     word_count = Column(Integer, default=0)
 
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at = Column(DateTime, default=datetime.utcnow)
 
     updated_at = Column(
         DateTime,
-        default=lambda: datetime.now(timezone.utc),
-        onupdate=lambda: datetime.now(timezone.utc)
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow
     )
 
     questions = relationship(
@@ -251,7 +251,7 @@ class ReadingSubmission(Base):
 
     answers = Column(Text, nullable=False)
 
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at = Column(DateTime, default=datetime.utcnow)
 
     user = relationship(
         "User",
@@ -298,7 +298,7 @@ class ReadingResult(Base):
 
     feedback = Column(Text)
 
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at = Column(DateTime, default=datetime.utcnow)
 
     submission = relationship(
         "ReadingSubmission",
@@ -334,7 +334,7 @@ class ReadingAttempt(Base):
 
     total_questions = Column(Integer, nullable=False)
 
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at = Column(DateTime, default=datetime.utcnow)
 
     skill_type = Column(String, nullable=True)
 

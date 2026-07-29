@@ -280,16 +280,20 @@ const WritingPractice = () => {
 };
 
 const ScoreCard = ({ label, score }) => {
-  const getColor = (s) => {
-    if (s >= 80) return 'text-green-500';
-    if (s >= 60) return 'text-yellow-500';
+  const toBand = (s) => (Math.round(s / 10 * 2) / 2);
+  const band = toBand(score);
+
+  const getColor = (b) => {
+    if (b >= 8.0) return 'text-green-500';
+    if (b >= 6.5) return 'text-emerald-500';
+    if (b >= 5.5) return 'text-yellow-500';
     return 'text-red-500';
   };
 
   return (
     <div className="text-center p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50">
-      <div className={`text-2xl font-bold ${getColor(score)}`}>
-        {Math.round(score)}%
+      <div className={`text-2xl font-bold ${getColor(band)}`}>
+        {band.toFixed(1)}
       </div>
       <div className="text-xs text-gray-400 mt-1">{label}</div>
     </div>

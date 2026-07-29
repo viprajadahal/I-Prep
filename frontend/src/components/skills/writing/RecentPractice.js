@@ -31,7 +31,7 @@ const RecentPractice = ({ essays, results, onContinue }) => {
       <div className="space-y-3">
         {recent.map((essay, idx) => {
           const result = results.find(r => r.essay_id === essay.id);
-          const score = result ? Math.round(result.overall_score) : null;
+          const score = result ? (Math.round(result.overall_score / 10 * 2) / 2) : null;
 
           return (
             <motion.div
@@ -59,7 +59,7 @@ const RecentPractice = ({ essays, results, onContinue }) => {
                 {score !== null && (
                   <div className="flex items-center gap-1 text-sm">
                     <Star size={14} className="text-yellow-400 fill-yellow-400" />
-                    <span className="font-semibold text-gray-900 dark:text-white">Band {score / 10}</span>
+                    <span className="font-semibold text-gray-900 dark:text-white">{score.toFixed(1)}</span>
                   </div>
                 )}
                 <button

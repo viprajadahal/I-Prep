@@ -11,14 +11,16 @@ import {
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
-const ScoreRing = ({ label, score, color, size = 64 }) => {
+const ScoreRing = ({ label, bandScore, color, size = 64 }) => {
   const radius = (size - 8) / 2;
   const circ = 2 * Math.PI * radius;
-  const offset = circ * (1 - score / 100);
+  const pct = (bandScore / 9) * 100;
+  const offset = circ * (1 - pct / 100);
 
-  const getColor = (s) => {
-    if (s >= 80) return '#10b981';
-    if (s >= 60) return '#f59e0b';
+  const getColor = (b) => {
+    if (b >= 8.0) return '#10b981';
+    if (b >= 6.5) return '#22c55e';
+    if (b >= 5.5) return '#f59e0b';
     return '#ef4444';
   };
 
@@ -29,7 +31,7 @@ const ScoreRing = ({ label, score, color, size = 64 }) => {
           <circle cx={size/2} cy={size/2} r={radius} stroke="#e5e7eb" strokeWidth="4" fill="none" className="dark:stroke-gray-700" />
           <motion.circle
             cx={size/2} cy={size/2} r={radius}
-            stroke={color || getColor(score)}
+            stroke={color || getColor(bandScore)}
             strokeWidth="4" fill="none" strokeLinecap="round"
             strokeDasharray={circ}
             initial={{ strokeDashoffset: circ }}
@@ -38,7 +40,7 @@ const ScoreRing = ({ label, score, color, size = 64 }) => {
           />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-lg font-bold text-gray-900 dark:text-white">{Math.round(score)}</span>
+          <span className="text-lg font-bold text-gray-900 dark:text-white">{bandScore.toFixed(1)}</span>
         </div>
       </div>
       <span className="text-xs text-gray-500 dark:text-gray-400 mt-2">{label}</span>
@@ -50,19 +52,22 @@ const AIFeedbackPanel = ({ result, prompt, essayText, onBack, onRetry }) => {
   const [showAllErrors, setShowAllErrors] = useState(false);
   const toBandScore = (score) => {
     const raw = score / 10;
-    return (Math.round(raw * 2) / 2).toFixed(1);
+    return Math.round(raw * 2) / 2;
   };
 
   const getBandLabel = (band) => {
-    const b = parseFloat(band);
-    if (b >= 8.0) return 'Excellent';
-    if (b >= 7.0) return 'Very Good';
-    if (b >= 6.0) return 'Good';
-    if (b >= 5.0) return 'Modest';
+    if (band >= 8.0) return 'Excellent';
+    if (band >= 7.0) return 'Very Good';
+    if (band >= 6.0) return 'Good';
+    if (band >= 5.0) return 'Modest';
     return 'Needs Improvement';
   };
 
-  const bandScore = toBandScore(result.overall_score);
+  const grammarBand = toBandScore(result.grammar_score);
+  const vocabBand = toBandScore(result.vocabulary_score);
+  const coherenceBand = toBandScore(result.coherence_score);
+  const taskBand = toBandScore(result.task_achievement_score || result.overall_score);
+  const overallBand = (grammarBand + vocabBand + coherenceBand + taskBand) / 4;
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -94,17 +99,17 @@ const AIFeedbackPanel = ({ result, prompt, essayText, onBack, onRetry }) => {
 
         <div className="flex items-center justify-center gap-8 mb-8 py-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl">
           <div className="text-center">
-            <div className="text-4xl font-extrabold text-violet-600 dark:text-violet-400">{bandScore}</div>
+            <div className="text-4xl font-extrabold text-violet-600 dark:text-violet-400">{overallBand.toFixed(1)}</div>
             <div className="text-sm font-medium text-gray-600 dark:text-gray-400 mt-1">Overall Band</div>
-            <div className="text-xs text-gray-400">{getBandLabel(result.overall_score)}</div>
+            <div className="text-xs text-gray-400">{getBandLabel(overallBand)}</div>
           </div>
         </div>
 
         <div className="flex items-center justify-center gap-6 mb-8 flex-wrap">
-          <ScoreRing label="Task Achievement" score={result.task_achievement_score || result.overall_score} color="#7c3aed" />
-          <ScoreRing label="Coherence" score={result.coherence_score} color="#4c6ef5" />
-          <ScoreRing label="Vocabulary" score={result.vocabulary_score} color="#f59e0b" />
-          <ScoreRing label="Grammar" score={result.grammar_score} color="#10b981" />
+          <ScoreRing label="Task Achievement" bandScore={taskBand} color="#7c3aed" />
+          <ScoreRing label="Coherence" bandScore={coherenceBand} color="#4c6ef5" />
+          <ScoreRing label="Vocabulary" bandScore={vocabBand} color="#f59e0b" />
+          <ScoreRing label="Grammar" bandScore={grammarBand} color="#10b981" />
         </div>
 
         {result.feedback && (
