@@ -21,11 +21,16 @@ const LoginForm = () => {
   const handleSubmit = async (e) => {
 e.preventDefault();
   try {
-    await login(formData.email, formData.password);
-    navigate('/dashboard');
+    const { role } = await login(formData.email, formData.password);
+    if (role === 'admin') {
+      navigate('/admin/dashboard');
+    } else {
+      navigate('/dashboard');
+    }
   } catch (err) {
-    console.error(err);
-    alert('Login failed. Check your email and password.');
+    console.error('Login error:', err);
+    const msg = err.response?.data?.detail || err.message || 'Unknown error';
+    alert('Login failed: ' + msg);
   }
 };
 

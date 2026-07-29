@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
-const API_URL = 'http://127.0.0.1:8000';
+const API_URL = 'http://localhost:8000';
 
 const AuthContext = createContext();
 
@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      axios.get(`${API_URL}/auth/me`, {
+      axios.get(`${API_URL}/api/v1/auth/me`, {
         headers: { Authorization: `Bearer ${token}` }
       })
         .then(res => {
@@ -34,21 +34,18 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    const response = await axios.post(`${API_URL}/auth/login`, { email, password });
-    const token = response.data.access_token;
-    localStorage.setItem('token', token);
+    const response = await axios.post(`${API_URL}/api/v1/auth/login`, { email, password });
+    const { access_token, role, user: userData } = response.data;
+    localStorage.setItem('token', access_token);
+    localStorage.setItem('role', role);
 
-    // fetch user info immediately after login
-    const meResponse = await axios.get(`${API_URL}/auth/me`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    setUser(meResponse.data);
+    setUser(userData);
     setIsAuthenticated(true);
-    return true;
+    return { role };
   };
 
   const register = async (data) => {
-    await axios.post(`${API_URL}/auth/register`, {
+    await axios.post(`${API_URL}/api/v1/auth/register`, {
       email: data.email,
       full_name: data.name,
       password: data.password,
@@ -59,12 +56,15 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('role');
     setUser(null);
     setIsAuthenticated(false);
   };
 
+  const isAdmin = user?.role === 'admin';
+
   return (
-  <AuthContext.Provider value={{ user, setUser, isAuthenticated, loading, login, register, logout }}>
+  <AuthContext.Provider value={{ user, setUser, isAuthenticated, loading, login, register, logout, isAdmin }}>
     {children}
   </AuthContext.Provider>
 );

@@ -57,7 +57,12 @@ async def login(credentials: LoginRequest, db: AsyncSession = Depends(get_db)):
     if not user or not pwd_context.verify(credentials.password[:72], user.hashed_password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
 
-    return {"access_token": create_token(user.id), "token_type": "bearer"}
+    return {
+        "access_token": create_token(user.id),
+        "token_type": "bearer",
+        "role": user.role,
+        "user": UserResponse.model_validate(user)
+    }
 
 
 async def get_current_user(
@@ -77,6 +82,17 @@ async def get_current_user(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
 
     return user
+
+
+async def get_current_admin(
+    current_user: User = Depends(get_current_user)
+):
+    if current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required"
+        )
+    return current_user
 
 
 @router.get("/me", response_model=UserResponse)

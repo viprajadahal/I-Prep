@@ -347,7 +347,7 @@ async def download_resource(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="File does not exist on server disk"
             )
-        
+    
         # Increment download count
         resource.download_count += 1
         await db.commit()

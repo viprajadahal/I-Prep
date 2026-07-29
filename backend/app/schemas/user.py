@@ -22,6 +22,8 @@ class UserResponse(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
+    role: str
+    user: "UserResponse"
 
     # what the frontend sends when logging in
 class LoginRequest(BaseModel):
