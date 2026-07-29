@@ -24,13 +24,16 @@ const RegisterForm = () => {
     confirmPassword: '',
     targetBand: '7.0',
   });
+  const [error, setError] = React.useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
     try {
       await register(formData);
       navigate('/dashboard');
     } catch (err) {
+      setError(err.response?.data?.detail || 'Registration failed. Please try again.');
       console.error(err);
       alert('Registration failed. Try a different email.');
     }
@@ -82,6 +85,11 @@ const RegisterForm = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-xl text-sm">
+                {error}
+              </div>
+            )}
             <div>
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">
                 Full Name

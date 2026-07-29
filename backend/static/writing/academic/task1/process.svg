@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 480" font-family="Arial, Helvetica, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#f8f9fa"/>
+      <stop offset="100%" style="stop-color:#ffffff"/>
+    </linearGradient>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#4c6ef5"/>
+    </marker>
+  </defs>
+  <rect width="700" height="480" fill="url(#bg)" rx="8"/>
+  <text x="350" y="30" text-anchor="middle" font-size="15" font-weight="bold" fill="#1a1a2e">The Process of Making Chocolate</text>
+  <text x="350" y="48" text-anchor="middle" font-size="11" fill="#666">From cocoa beans to finished chocolate product</text>
+  <rect x="30" y="75" width="120" height="60" fill="#8d6e63" stroke="#5d4037" stroke-width="1.5" rx="6"/>
+  <text x="90" y="100" text-anchor="middle" font-size="10" fill="white" font-weight="bold">Cocoa Beans</text>
+  <text x="90" y="115" text-anchor="middle" font-size="9" fill="#d7ccc8">(From trees)</text>
+  <line x1="150" y1="105" x2="185" y2="105" stroke="#4c6ef5" stroke-width="2" marker-end="url(#arrow)"/>
+  <rect x="190" y="75" width="120" height="60" fill="#ffcc80" stroke="#ef6c00" stroke-width="1.5" rx="6"/>
+  <text x="250" y="97" text-anchor="middle" font-size="10" fill="#e65100" font-weight="bold">Fermentation</text>
+  <text x="250" y="112" text-anchor="middle" font-size="9" fill="#bf360c">(5-6 days, boxes)</text>
+  <line x1="310" y1="105" x2="345" y2="105" stroke="#4c6ef5" stroke-width="2" marker-end="url(#arrow)"/>
+  <rect x="350" y="75" width="120" height="60" fill="#ffe0b2" stroke="#ef6c00" stroke-width="1.5" rx="6"/>
+  <text x="410" y="97" text-anchor="middle" font-size="10" fill="#e65100" font-weight="bold">Drying</text>
+  <text x="410" y="112" text-anchor="middle" font-size="9" fill="#bf360c">(Sun drying, 1 week)</text>
+  <line x1="470" y1="105" x2="505" y2="105" stroke="#4c6ef5" stroke-width="2" marker-end="url(#arrow)"/>
+  <rect x="510" y="75" width="140" height="60" fill="#d7ccc8" stroke="#795548" stroke-width="1.5" rx="6"/>
+  <text x="580" y="97" text-anchor="middle" font-size="10" fill="#4e342e" font-weight="bold">Shipping</text>
+  <text x="580" y="112" text-anchor="middle" font-size="9" fill="#795548">(To chocolate factory)</text>
+  <line x1="580" y1="135" x2="580" y2="170" stroke="#4c6ef5" stroke-width="2" marker-end="url(#arrow)"/>
+  <rect x="510" y="175" width="140" height="60" fill="#bcaaa4" stroke="#795548" stroke-width="1.5" rx="6"/>
+  <text x="580" y="197" text-anchor="middle" font-size="10" fill="#4e342e" font-weight="bold">Roasting</text>
+  <text x="580" y="212" text-anchor="middle" font-size="9" fill="#795548">(120-150°C, 30 min)</text>
+  <line x1="510" y1="205" x2="475" y2="205" stroke="#4c6ef5" stroke-width="2" marker-end="url(#arrow)"/>
+  <rect x="350" y="175" width="120" height="60" fill="#d7ccc8" stroke="#795548" stroke-width="1.5" rx="6"/>
+  <text x="410" y="197" text-anchor="middle" font-size="10" fill="#4e342e" font-weight="bold">Crushing</text>
+  <text x="410" y="212" text-anchor="middle" font-size="9" fill="#795548">(Remove shells)</text>
+  <line x1="350" y1="205" x2="315" y2="205" stroke="#4c6ef5" stroke-width="2" marker-end="url(#arrow)"/>
+  <rect x="190" y="175" width="120" height="60" fill="#efebe9" stroke="#795548" stroke-width="1.5" rx="6"/>
+  <text x="250" y="197" text-anchor="middle" font-size="10" fill="#4e342e" font-weight="bold">Grinding</text>
+  <text x="250" y="212" text-anchor="middle" font-size="9" fill="#795548">(Into cocoa paste)</text>
+  <line x1="190" y1="205" x2="155" y2="205" stroke="#4c6ef5" stroke-width="2" marker-end="url(#arrow)"/>
+  <rect x="30" y="175" width="120" height="60" fill="#fff3e0" stroke="#ef6c00" stroke-width="1.5" rx="6"/>
+  <text x="90" y="197" text-anchor="middle" font-size="10" fill="#e65100" font-weight="bold">Pressing</text>
+  <text x="90" y="212" text-anchor="middle" font-size="9" fill="#bf360c">(Extract cocoa butter)</text>
+  <line x1="90" y1="235" x2="90" y2="270" stroke="#4c6ef5" stroke-width="2" marker-end="url(#arrow)"/>
+  <rect x="30" y="275" width="120" height="60" fill="#f5f5f5" stroke="#9e9e9e" stroke-width="1.5" rx="6"/>
+  <text x="90" y="297" text-anchor="middle" font-size="10" fill="#424242" font-weight="bold">Cocoa Powder</text>
+  <text x="90" y="312" text-anchor="middle" font-size="9" fill="#757575">(From remaining cake)</text>
+  <line x1="150" y1="305" x2="185" y2="305" stroke="#4c6ef5" stroke-width="2" marker-end="url(#arrow)"/>
+  <rect x="190" y="275" width="140" height="60" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.5" rx="6"/>
+  <text x="260" y="295" text-anchor="middle" font-size="10" fill="#1b5e20" font-weight="bold">Mixing</text>
+  <text x="260" y="310" text-anchor="middle" font-size="9" fill="#2e7d32">Cocoa butter + powder</text>
+  <text x="260" y="325" text-anchor="middle" font-size="9" fill="#2e7d32">+ sugar + milk powder</text>
+  <line x1="330" y1="305" x2="365" y2="305" stroke="#4c6ef5" stroke-width="2" marker-end="url(#arrow)"/>
+  <rect x="370" y="275" width="130" height="60" fill="#dcedc8" stroke="#689f38" stroke-width="1.5" rx="6"/>
+  <text x="435" y="297" text-anchor="middle" font-size="10" fill="#33691e" font-weight="bold">Conching</text>
+  <text x="435" y="312" text-anchor="middle" font-size="9" fill="#558b2f">(Stirring, 12-72 hrs)</text>
+  <line x1="500" y1="305" x2="535" y2="305" stroke="#4c6ef5" stroke-width="2" marker-end="url(#arrow)"/>
+  <rect x="540" y="275" width="120" height="60" fill="#c5cae9" stroke="#3949ab" stroke-width="1.5" rx="6"/>
+  <text x="600" y="297" text-anchor="middle" font-size="10" fill="#1a237e" font-weight="bold">Tempering</text>
+  <text x="600" y="312" text-anchor="middle" font-size="9" fill="#283593">(Cool &amp; reheat)</text>
+  <line x1="600" y1="335" x2="600" y2="370" stroke="#4c6ef5" stroke-width="2" marker-end="url(#arrow)"/>
+  <rect x="540" y="375" width="120" height="60" fill="#ffe0b2" stroke="#ef6c00" stroke-width="1.5" rx="6"/>
+  <text x="600" y="397" text-anchor="middle" font-size="10" fill="#e65100" font-weight="bold">Moulding</text>
+  <text x="600" y="412" text-anchor="middle" font-size="9" fill="#bf360c">(Into shapes)</text>
+  <line x1="540" y1="405" x2="505" y2="405" stroke="#4c6ef5" stroke-width="2" marker-end="url(#arrow)"/>
+  <rect x="370" y="375" width="130" height="60" fill="#e1bee7" stroke="#7b1fa2" stroke-width="1.5" rx="6"/>
+  <text x="435" y="397" text-anchor="middle" font-size="10" fill="#4a148c" font-weight="bold">Cooling</text>
+  <text x="435" y="412" text-anchor="middle" font-size="9" fill="#6a1b9a">(Refrigeration)</text>
+  <line x1="370" y1="405" x2="335" y2="405" stroke="#4c6ef5" stroke-width="2" marker-end="url(#arrow)"/>
+  <rect x="190" y="375" width="140" height="60" fill="#b2dfdb" stroke="#00695c" stroke-width="1.5" rx="6"/>
+  <text x="260" y="395" text-anchor="middle" font-size="10" fill="#004d40" font-weight="bold">Packaging</text>
+  <text x="260" y="410" text-anchor="middle" font-size="9" fill="#00695c">Wrapping &amp; boxing</text>
+  <text x="260" y="425" text-anchor="middle" font-size="9" fill="#00695c">Labelled for sale</text>
+  <line x1="190" y1="405" x2="155" y2="405" stroke="#4c6ef5" stroke-width="2" marker-end="url(#arrow)"/>
+  <rect x="30" y="375" width="120" height="60" fill="#ffccbc" stroke="#bf360c" stroke-width="1.5" rx="6"/>
+  <text x="90" y="395" text-anchor="middle" font-size="10" fill="#bf360c" font-weight="bold">Finished</text>
+  <text x="90" y="410" text-anchor="middle" font-size="10" fill="#bf360c" font-weight="bold">Chocolate</text>
+  <text x="90" y="425" text-anchor="middle" font-size="9" fill="#d84315">Ready to eat!</text>
+  <text x="350" y="468" text-anchor="middle" font-size="10" fill="#999">IELTS Academic Writing Task 1 - Process Diagram</text>
+</svg>

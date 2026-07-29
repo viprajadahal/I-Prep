@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 480" font-family="Arial, Helvetica, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#f8f9fa"/>
+      <stop offset="100%" style="stop-color:#ffffff"/>
+    </linearGradient>
+  </defs>
+  <rect width="700" height="480" fill="url(#bg)" rx="8"/>
+  <text x="350" y="35" text-anchor="middle" font-size="16" font-weight="bold" fill="#1a1a2e">Household Expenditure by Category in Country Y (2023)</text>
+  <circle cx="260" cy="250" r="170" fill="none" stroke="#ddd" stroke-width="1"/>
+  <path d="M260,250 L260,80 A170,170 0 0,1 421.4,165 Z" fill="#4c6ef5"/>
+  <path d="M260,250 L421.4,165 A170,170 0 0,1 426.8,330 Z" fill="#ff6b6b"/>
+  <path d="M260,250 L426.8,330 A170,170 0 0,1 175.6,405.4 Z" fill="#ffd43b"/>
+  <path d="M260,250 L175.6,405.4 A170,170 0 0,1 93.2,175.6 Z" fill="#51cf66"/>
+  <path d="M260,250 L93.2,175.6 A170,170 0 0,1 260,80 Z" fill="#cc5de8"/>
+  <text x="330" y="180" font-size="14" fill="white" font-weight="bold">28%</text>
+  <text x="380" y="280" font-size="14" fill="white" font-weight="bold">22%</text>
+  <text x="310" y="385" font-size="14" fill="white" font-weight="bold">18%</text>
+  <text x="140" y="310" font-size="14" fill="white" font-weight="bold">16%</text>
+  <text x="160" y="170" font-size="14" fill="white" font-weight="bold">16%</text>
+  <rect x="500" y="120" width="16" height="16" fill="#4c6ef5" rx="3"/>
+  <text x="522" y="133" font-size="12" fill="#333">Housing (28%)</text>
+  <rect x="500" y="150" width="16" height="16" fill="#ff6b6b" rx="3"/>
+  <text x="522" y="163" font-size="12" fill="#333">Food (22%)</text>
+  <rect x="500" y="180" width="16" height="16" fill="#ffd43b" rx="3"/>
+  <text x="522" y="193" font-size="12" fill="#333">Transport (18%)</text>
+  <rect x="500" y="210" width="16" height="16" fill="#51cf66" rx="3"/>
+  <text x="522" y="223" font-size="12" fill="#333">Education (16%)</text>
+  <rect x="500" y="240" width="16" height="16" fill="#cc5de8" rx="3"/>
+  <text x="522" y="253" font-size="12" fill="#333">Healthcare (16%)</text>
+  <text x="350" y="470" text-anchor="middle" font-size="10" fill="#999">Source: National Statistics Office, 2023</text>
+</svg>
