@@ -4,9 +4,14 @@ import shutil
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
 from sqlalchemy import func
 from sqlmodel import select
-from sqlmodel.ext.asyncio.session import AsyncSession 
-from pydub import AudioSegment
-import whisper
+from sqlmodel.ext.asyncio.session import AsyncSession
+
+try:
+    from pydub import AudioSegment
+    import whisper
+except ImportError:
+    AudioSegment = None
+    whisper = None
 
 # --- DATABASE IMPORTS ---
 from app.database import get_db
@@ -19,7 +24,10 @@ router = APIRouter(
 )
 
 # Load AI model
-model = whisper.load_model("tiny")
+try:
+    model = whisper.load_model("tiny") if whisper else None
+except Exception:
+    model = None
 
 # --- 1. SMART GET: Automatically pick question based on User's Level ---
 @router.get("/get-next-test")

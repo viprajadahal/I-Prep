@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 load_dotenv()  # This loads the .env file from the current folder
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import auth, writing, speaking, listening, reading, analytics 
+from app.routers import auth, writing, speaking, listening, reading, analytics, mock_test
 
 app = FastAPI(title="IELTS Prep API", version="1.0")
 app.add_middleware(
@@ -18,6 +18,7 @@ app.include_router(speaking.router)
 app.include_router(listening.router)
 app.include_router(reading.router)
 app.include_router(analytics.router)
+app.include_router(mock_test.router)
 
 @app.get("/")
 async def root():

@@ -5,6 +5,8 @@ import ProtectedRoute from '../components/common/ProtectedRoute';
 import HomePage from '../pages/HomePage';
 import PracticePage from '../pages/PracticePage';
 import MockTestsPage from '../pages/MockTestsPage';
+import MockTestAttempt from '../pages/MockTestAttempt';
+import MockTestResult from '../pages/MockTestResult';
 import DashboardPage from '../pages/DashboardPage';
 import WritingPage from '../pages/WritingPage';
 import ReadingPage from '../pages/ReadingPage';
@@ -15,6 +17,7 @@ import LoginPage from '../pages/LoginPage';
 import RegisterPage from '../pages/RegisterPage';
 import SettingsPage from '../pages/SettingsPage';
 import ProfilePage from '../pages/ProfilePage';
+import ProgressPage from '../pages/ProgressPage';
 
 const AppRoutes = () => {
   return (
@@ -22,6 +25,9 @@ const AppRoutes = () => {
       <Route path="/" element={<HomePage />} />
       <Route path="/practice" element={<PracticePage />} />
       <Route path="/mock-tests" element={<MockTestsPage />} />
+      <Route path="/mock-tests/progress" element={<ProtectedRoute><ProgressPage /></ProtectedRoute>} />
+      <Route path="/mock-tests/:attempt_id" element={<ProtectedRoute><MockTestAttempt /></ProtectedRoute>} />
+      <Route path="/mock-tests/:attempt_id/results" element={<ProtectedRoute><MockTestResult /></ProtectedRoute>} />
       <Route path="/resources" element={<ResourcesPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
