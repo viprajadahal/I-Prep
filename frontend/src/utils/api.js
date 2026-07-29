@@ -29,9 +29,9 @@ api.interceptors.response.use(
 );
 
 export const authAPI = {
-  login: (data) => api.post('/auth/login', data),
+  login: (email, password) => api.post('/auth/login', null, { params: { email, password } }),
   register: (data) => api.post('/auth/register', data),
-  logout: () => api.post('/auth/logout'),
+  logout: () => { localStorage.removeItem('iprep-token'); },
 };
 
 export const userAPI = {
@@ -47,9 +47,12 @@ export const readingAPI = {
 };
 
 export const writingAPI = {
-  getTasks: () => api.get('/writing/tasks'),
-  getTask: (id) => api.get(`/writing/tasks/${id}`),
-  submitTask: (id, data) => api.post(`/writing/tasks/${id}/submit`, data),
+  getPrompts: () => api.get('/writing/prompts'),
+  submitEssay: (data) => api.post('/writing/submit', data),
+  evaluateEssay: (essayId) => api.post('/writing/evaluate', { essay_id: essayId }),
+  getEssays: () => api.get('/writing/essays'),
+  getHistory: () => api.get('/writing/history'),
+  getResult: (essayId) => api.get(`/writing/results/${essayId}`),
 };
 
 export const listeningAPI = {

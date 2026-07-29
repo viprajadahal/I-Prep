@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic import BaseModel, EmailStr
 
 # what the frontend sends when registering
@@ -11,7 +12,7 @@ class UserCreate(BaseModel):
 class UserResponse(BaseModel):
     id: int
     email: str
-    full_name: str
+    full_name: Optional[str] = None
     target_band: float
 
     class Config:

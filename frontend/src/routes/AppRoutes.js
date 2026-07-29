@@ -34,6 +34,7 @@ const AppRoutes = () => {
 
       <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
       <Route path="/dashboard/writing" element={<ProtectedRoute><WritingPage /></ProtectedRoute>} />
+      <Route path="/dashboard/writing/:id" element={<ProtectedRoute><WritingPage /></ProtectedRoute>} />
       <Route path="/dashboard/reading" element={<ProtectedRoute><ReadingPage /></ProtectedRoute>} />
       <Route path="/dashboard/listening" element={<ProtectedRoute><ListeningPage /></ProtectedRoute>} />
       <Route path="/dashboard/speaking" element={<ProtectedRoute><SpeakingPage /></ProtectedRoute>} />

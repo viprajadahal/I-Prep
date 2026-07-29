@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
-const API_URL = 'http://127.0.0.1:8000';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
 const AuthContext = createContext();
 
@@ -12,9 +12,8 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // on app load, check if token exists and fetch user
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('iprep-token');
     if (token) {
       axios.get(`${API_URL}/auth/me`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -24,8 +23,7 @@ export const AuthProvider = ({ children }) => {
           setIsAuthenticated(true);
         })
         .catch(() => {
-          // token expired or invalid
-          localStorage.removeItem('token');
+          localStorage.removeItem('iprep-token');
         })
         .finally(() => setLoading(false));
     } else {
@@ -34,11 +32,12 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    const response = await axios.post(`${API_URL}/auth/login`, { email, password });
+    const response = await axios.post(`${API_URL}/auth/login`, null, {
+      params: { email, password }
+    });
     const token = response.data.access_token;
-    localStorage.setItem('token', token);
+    localStorage.setItem('iprep-token', token);
 
-    // fetch user info immediately after login
     const meResponse = await axios.get(`${API_URL}/auth/me`, {
       headers: { Authorization: `Bearer ${token}` }
     });
@@ -58,14 +57,14 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
+    localStorage.removeItem('iprep-token');
     setUser(null);
     setIsAuthenticated(false);
   };
 
   return (
-  <AuthContext.Provider value={{ user, setUser, isAuthenticated, loading, login, register, logout }}>
-    {children}
-  </AuthContext.Provider>
-);
+    <AuthContext.Provider value={{ user, setUser, isAuthenticated, loading, login, register, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };

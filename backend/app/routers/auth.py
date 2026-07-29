@@ -1,25 +1,29 @@
-from datetime import datetime, timedelta
+import bcrypt
+from jose import jwt, JWTError
+from pydantic import BaseModel
+from sqlalchemy import select
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from jose import jwt, JWTError
-from passlib.context import CryptContext
-from pydantic import BaseModel
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.database import get_db
 from app.models.user import User
 from app.schemas.user import UserCreate, UserResponse, Token, LoginRequest
+from app.utils.dependencies import get_current_user
+from datetime import datetime, timedelta
 
 router = APIRouter(prefix="/auth", tags=["auth"])
-pwd_context = CryptContext(schemes=["bcrypt"])
 security = HTTPBearer()
 
 
 def hash_password(password: str):
-    return pwd_context.hash(password[:72])
+    return bcrypt.hashpw(password[:72].encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+
+def verify_password(password: str, hashed: str) -> bool:
+    return bcrypt.checkpw(password[:72].encode("utf-8"), hashed.encode("utf-8"))
 
 
 def create_token(user_id: int):
@@ -50,33 +54,32 @@ async def register(user_data: UserCreate, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/login", response_model=Token)
-async def login(credentials: LoginRequest, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(User).where(User.email == credentials.email))
-    user = result.scalar_one_or_none()
-
-    if not user or not pwd_context.verify(credentials.password[:72], user.hashed_password):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
-
-    return {"access_token": create_token(user.id), "token_type": "bearer"}
-
-
-async def get_current_user(
-    token: HTTPAuthorizationCredentials = Depends(security),
-    db: AsyncSession = Depends(get_db)
-):
-    try:
-        payload = jwt.decode(token.credentials, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-        user_id = int(payload.get("sub"))
-    except (JWTError, TypeError, ValueError):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
-
-    result = await db.execute(select(User).where(User.id == user_id))
+async def login(email: str, password: str, db: AsyncSession = Depends(get_db)):
+    print(f"[LOGIN] Attempt for email={email}")
+    result = await db.execute(select(User).where(User.email == email))
     user = result.scalar_one_or_none()
 
     if not user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
+        print(f"[LOGIN] No user found for email={email}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password"
+        )
 
-    return user
+    print(f"[LOGIN] User found id={user.id}, verifying password...")
+    if not verify_password(password, user.hashed_password):
+        print(f"[LOGIN] Password verification FAILED for email={email}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password"
+        )
+
+    token = create_token(user.id)
+    print(f"[LOGIN] Success for user_id={user.id}, token={token[:20]}...")
+    return {
+        "access_token": token,
+        "token_type": "bearer"
+    }
 
 
 @router.get("/me", response_model=UserResponse)

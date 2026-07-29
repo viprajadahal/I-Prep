@@ -17,17 +17,19 @@ const LoginForm = () => {
   const [showPassword, setShowPassword] = React.useState(false);
   const [formData, setFormData] = React.useState({ email: '', password: '' });
   const [remember, setRemember] = React.useState(false);
+  const [error, setError] = React.useState('');
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  try {
-    await login(formData.email, formData.password);
-    navigate('/dashboard');
-  } catch (err) {
-    console.error(err);
-    alert('Login failed. Check your email and password.');
-  }
-};
+    e.preventDefault();
+    setError('');
+    try {
+      await login(formData.email, formData.password);
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Login failed. Please check your credentials.');
+    }
+  };
+
   return (
     <div className="min-h-screen flex">
       <div className="hidden lg:flex lg:w-1/2 bg-surface-light dark:bg-surface-dark relative overflow-hidden items-center justify-center">
@@ -80,6 +82,11 @@ const LoginForm = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-xl text-sm">
+                {error}
+              </div>
+            )}
             <div>
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">
                 Email
@@ -154,7 +161,7 @@ const LoginForm = () => {
               className="text-sm font-medium text-primary-600 hover:text-primary-700"
             >
               Create account
-            </Link>
+          </Link>
           </div>
         </motion.div>
       </div>

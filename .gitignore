@@ -15,3 +15,15 @@ dist/
 .idea/
 .DS_Store
 backend/uploads/*
+# Database
+*.db
+
+# Log files
+*.log
+
+# Uploads (keep folder, ignore contents)
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# OS
+Thumbs.db

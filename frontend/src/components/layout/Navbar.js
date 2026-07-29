@@ -102,7 +102,7 @@ const Navbar = () => {
                     <User size={14} className="text-white" />
                   </div>
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-200 hidden sm:block">
-                    {user?.full_name?.split(' ')[0]}
+                    {(user?.full_name || user?.name || 'Student').split(' ')[0]}
                   </span>
                   <ChevronDown size={14} className={`text-gray-400 transition-transform ${profileOpen ? 'rotate-180' : ''}`} />
                 </button>
