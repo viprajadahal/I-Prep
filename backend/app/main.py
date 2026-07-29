@@ -7,7 +7,18 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from app.routers import auth, writing_router, writing_compat, writing_assistant_router
+# Import all routers
+from app.routers import (
+    auth,
+    writing_router,
+    writing_compat,
+    writing_assistant_router,
+    speaking,
+    listening,
+    reading,
+    analytics,
+    mock_test,
+)
 
 STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
 
@@ -26,19 +37,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Register routers
 app.include_router(auth.router)
 app.include_router(writing_router.router)
 app.include_router(writing_compat.router)
 app.include_router(writing_assistant_router.router)
 
-# Main-branch routers (commented out — dependencies not yet available)
-# from app.routers import writing, speaking, listening, reading, analytics
-# app.include_router(writing.router)
-# app.include_router(speaking.router)
-# app.include_router(listening.router)
-# app.include_router(reading.router)
-# app.include_router(analytics.router)
+app.include_router(speaking.router)
+app.include_router(listening.router)
+app.include_router(reading.router)
+app.include_router(analytics.router)
+app.include_router(mock_test.router)
 
+# Serve static files
 if STATIC_DIR.is_dir():
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 

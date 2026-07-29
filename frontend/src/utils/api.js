@@ -10,7 +10,7 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('iprep-token');
+  const token = localStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -69,9 +69,11 @@ export const speakingAPI = {
 
 export const mockTestAPI = {
   getTests: () => api.get('/mock-tests'),
-  getTest: (id) => api.get(`/mock-tests/${id}`),
-  startTest: (id) => api.post(`/mock-tests/${id}/start`),
-  submitTest: (id, data) => api.post(`/mock-tests/${id}/submit`, data),
+  getTest: (attemptId) => api.get(`/mock-tests/${attemptId}`),
+  startTest: (testId) => api.post(`/mock-tests/start/${testId}`),
+  saveAnswer: (data) => api.post('/mock-tests/save-answer', data),
+  submitTest: (data) => api.post('/mock-tests/submit', data),
+  getTestResults: (attemptId) => api.get(`/mock-tests/results/${attemptId}`),
 };
 
 export default api;
